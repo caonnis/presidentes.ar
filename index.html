@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>Presidentes de la República Argentina</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --cream:#FAF7F2;
+    --paper:#F2EDE4;
+    --ink:#1A1208;
+    --ink2:#3D3020;
+    --ink3:#7A6A50;
+    --gold:#C8922A;
+    --gold2:#E8B84B;
+    --red:#8B1A1A;
+    --blue:#1A3A5C;
+    --green:#1A4A2A;
+    --border:#D4C9B0;
+    --shadow:rgba(26,18,8,0.08);
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+
+  /* HEADER */
+  header{background:var(--ink);color:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.3);}
+  .header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;gap:2rem;height:64px;}
+  .logo{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;letter-spacing:0.05em;white-space:nowrap;}
+  .logo span{color:var(--gold2);}
+  .header-search{flex:1;max-width:320px;}
+  .header-search input{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:var(--cream);padding:7px 14px;border-radius:4px;font-size:0.85rem;font-family:'DM Sans',sans-serif;}
+  .header-search input::placeholder{color:rgba(250,247,242,0.45);}
+  .header-search input:focus{outline:none;border-color:var(--gold2);}
+  .header-actions{margin-left:auto;display:flex;gap:10px;align-items:center;}
+  .btn-compare{background:var(--gold);color:var(--ink);border:none;padding:7px 16px;border-radius:4px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;}
+  .btn-compare:hover{background:var(--gold2);}
+  .compare-badge{background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.7rem;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;}
+
+  /* LAYOUT */
+  .app{max-width:1400px;margin:0 auto;padding:1.5rem 2rem;display:grid;grid-template-columns:260px 1fr;gap:1.5rem;}
+  
+  /* SIDEBAR FILTERS */
+  .sidebar{position:sticky;top:80px;height:calc(100vh - 96px);overflow-y:auto;}
+  .sidebar::-webkit-scrollbar{width:4px;}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .filter-section{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin-bottom:1rem;}
+  .filter-title{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.8rem;}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;cursor:pointer;transition:all 0.15s;background:#fff;color:var(--ink2);}
+  .chip:hover{border-color:var(--gold);color:var(--gold);}
+  .chip.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+  .filter-range{width:100%;accent-color:var(--gold);margin:8px 0 4px;}
+  .range-labels{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--ink3);}
+  .filter-stats{font-size:0.78rem;color:var(--ink3);text-align:center;padding-top:0.5rem;}
+  .filter-stats strong{color:var(--gold);}
+
+  /* GRID */
+  .main-content{min-width:0;}
+  .results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .results-count{font-size:0.82rem;color:var(--ink3);}
+  .sort-select{font-size:0.82rem;border:1px solid var(--border);padding:5px 10px;border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .presidents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;}
+  
+  /* PRESIDENT CARD */
+  .pcard{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;}
+  .pcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow);border-color:var(--gold);}
+  .pcard.in-compare{border:2px solid var(--gold);box-shadow:0 4px 16px rgba(200,146,42,0.25);}
+  .pcard.selected{border:2px solid var(--red);box-shadow:0 4px 16px rgba(139,26,26,0.25);}
+  .pcard-flag{position:absolute;top:8px;left:8px;font-size:0.6rem;padding:2px 6px;border-radius:3px;font-weight:600;letter-spacing:0.05em;}
+  .flag-electo{background:#E8F4E8;color:var(--green);}
+  .flag-facto{background:#FEE8E8;color:var(--red);}
+  .flag-interino{background:#FFF8E8;color:#8B6914;}
+  .flag-live{background:var(--red);color:#fff;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+  .pcard-compare-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;color:var(--ink3);transition:all 0.15s;z-index:2;}
+  .pcard-compare-btn:hover,.pcard.in-compare .pcard-compare-btn{background:var(--gold);border-color:var(--gold);color:#fff;}
+  .pcard-img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top;background:var(--paper);display:block;}
+  .pcard-img-placeholder{width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--paper) 0%,var(--border) 100%);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--ink3);}
+  .pcard-body{padding:0.75rem;}
+  .pcard-name{font-family:'Playfair Display',serif;font-size:0.85rem;font-weight:700;line-height:1.25;margin-bottom:3px;}
+  .pcard-period{font-size:0.7rem;color:var(--ink3);}
+  .pcard-party{font-size:0.65rem;padding:2px 6px;border-radius:3px;display:inline-block;margin-top:4px;font-weight:500;}
+  .pcard-indicators{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+  .mini-ind{font-size:0.62rem;padding:2px 5px;border-radius:3px;background:var(--paper);color:var(--ink3);}
+
+  /* DURATION BAR */
+  .pcard-duration-bar{height:3px;background:var(--border);margin:8px 0 0;border-radius:2px;overflow:hidden;}
+  .pcard-duration-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width 0.5s ease;}
+
+
+
+  /* PHOTO FRAME */
+  .pcard-img-wrap{position:relative;width:100%;aspect-ratio:1;overflow:hidden;background:var(--paper);}
+  .pcard-img-wrap img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;transition:transform 0.3s ease;}
+  .pcard:hover .pcard-img-wrap img{transform:scale(1.05);}
+  .pcard-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(26,18,8,0.45));pointer-events:none;}
+
+  /* QUOTE BLOCK */
+  .quote-block{background:var(--paper);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:0;}
+  .quote-text{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink2);line-height:1.6;margin-bottom:0.4rem;}
+  .quote-source{font-size:0.7rem;color:var(--ink3);}
+
+  /* CURIOSIDADES SIDEBAR */
+  .curio-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.75rem;}
+  .curio-item:last-child{border:none;}
+  .curio-icon{font-size:1rem;flex-shrink:0;}
+  .curio-text{color:var(--ink2);line-height:1.4;}
+  .curio-text strong{color:var(--ink);}
+  .rank-section{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;}
+  .rank-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.75rem;}
+  .rank-item:last-child{border:none;}
+  .rank-num{font-weight:700;color:var(--gold);min-width:20px;}
+  .rank-name{color:var(--ink2);flex:1;}
+  .rank-val{font-size:0.68rem;color:var(--ink3);}
+
+  /* PHOTO CREDIT */
+  .photo-credit{font-size:0.6rem;color:var(--ink3);text-align:center;padding:2px 0;background:var(--paper);}
+
+  /* STATS BAR */
+  .stats-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.5rem;}
+  .stat-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:0.75rem;text-align:center;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--gold);}
+  .stat-label{font-size:0.65rem;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;}
+
+  /* DETAIL PANEL */
+  .detail-overlay{position:fixed;inset:0;background:rgba(26,18,8,0.55);z-index:200;display:none;align-items:flex-start;justify-content:flex-end;padding:1rem;}
+  .detail-overlay.open{display:flex;}
+  .detail-panel{background:var(--cream);width:min(900px,95vw);max-height:calc(100vh - 2rem);overflow-y:auto;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.35);position:relative;}
+  .detail-panel::-webkit-scrollbar{width:5px;}
+  .detail-panel::-webkit-scrollbar-thumb{background:var(--border);}
+  .detail-close{position:absolute;top:1rem;right:1rem;width:36px;height:36px;border-radius:50%;background:rgba(26,18,8,0.08);border:none;cursor:pointer;font-size:1.1rem;color:var(--ink);z-index:3;}
+  .detail-close:hover{background:rgba(26,18,8,0.15);}
+  .detail-hero{display:grid;grid-template-columns:200px 1fr;gap:0;}
+  .detail-photo{width:200px;min-height:260px;object-fit:cover;object-fit:cover;object-position:top;border-radius:12px 0 0 0;}
+  .detail-photo-ph{width:200px;min-height:260px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:5rem;color:var(--ink3);border-radius:12px 0 0 0;}
+  .detail-header{padding:2rem;background:var(--ink);color:var(--cream);border-radius:0 12px 0 0;}
+  .detail-live-badge{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;font-size:0.7rem;padding:3px 10px;border-radius:20px;margin-bottom:0.75rem;font-weight:600;}
+  .detail-live-dot{width:7px;height:7px;background:#fff;border-radius:50%;animation:pulse 1.5s infinite;}
+  .detail-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;line-height:1.1;margin-bottom:0.4rem;}
+  .detail-period{font-size:0.85rem;opacity:0.7;margin-bottom:1rem;}
+  .detail-meta-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .dmchip{padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:500;border:1px solid rgba(255,255,255,0.2);color:rgba(250,247,242,0.85);}
+  .detail-body{padding:0 0 1.5rem;}
+  .detail-section{margin-bottom:0;padding:1.25rem 2rem;}
+  .detail-section+.detail-section{border-top:1px solid var(--border);}
+  .detail-section-title{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;}
+  .bio-text{font-size:0.88rem;line-height:1.7;color:var(--ink2);}
+  /* Tabs */
+  .detail-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:#fff;padding:0 2rem;}
+  .detail-tab{padding:0.7rem 1.1rem;font-size:0.78rem;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;white-space:nowrap;}
+  .detail-tab:hover{color:var(--ink);}
+  .detail-tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+  .detail-tab-panel{display:none;}
+  .detail-tab-panel.active{display:block;}
+  /* Timeline hitos */
+  .hitos-timeline{display:flex;flex-direction:column;gap:0;}
+  .hito-item{display:flex;gap:0;align-items:stretch;}
+  .hito-left{display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;}
+  .hito-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);border:2px solid #fff;box-shadow:0 0 0 2px var(--gold);flex-shrink:0;margin-top:3px;}
+  .hito-line{width:2px;background:var(--border);flex:1;margin:4px 0;}
+  .hito-item:last-child .hito-line{display:none;}
+  .hito-content{padding:0 0 1rem 0.75rem;flex:1;}
+  .hito-num{font-size:0.6rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;}
+  .hito-year{font-size:0.72rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;margin-bottom:3px;letter-spacing:0.02em;}
+  .hito-text{font-size:0.83rem;color:var(--ink2);line-height:1.45;}
+  /* Curiosidades card */
+  .curio-card{background:linear-gradient(135deg,var(--paper),#fff);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;display:flex;gap:10px;align-items:flex-start;}
+  .curio-card-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+  .curio-card-text{font-size:0.83rem;color:var(--ink2);line-height:1.5;}
+  /* Bio highlight box */
+  .bio-lead{font-size:1rem;font-weight:500;color:var(--ink);line-height:1.65;font-family:'Playfair Display',serif;margin-bottom:0.75rem;}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;}
+  .info-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:0.9rem 0.8rem 0.75rem;text-align:center;position:relative;overflow:hidden;}
+  .info-card-icon{font-size:1.1rem;margin-bottom:4px;display:block;}
+  .info-label{font-size:0.62rem;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+  .info-value{font-size:0.98rem;font-weight:700;color:var(--ink);line-height:1.2;}
+  /* Indicators */
+  .indicators-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.75rem;}
+  .ind-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:0.9rem;position:relative;}
+  .ind-card-dot{width:8px;height:8px;border-radius:50%;position:absolute;top:10px;right:10px;}
+  .ind-dot-good{background:#2E7D32;}
+  .ind-dot-bad{background:#C62828;}
+  .ind-dot-neutral{background:#9E9E9E;}
+  .ind-dot-warn{background:#E65100;}
+  .ind-label{font-size:0.62rem;color:var(--ink3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+  .ind-label-icon{font-size:0.75rem;}
+  .ind-value{font-size:1.05rem;font-weight:700;color:var(--ink);line-height:1.3;}
+  .ind-sub{font-size:0.68rem;color:var(--ink3);margin-top:2px;}
+  .ind-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:0.65rem;font-weight:600;margin-top:4px;}
+  .badge-good{background:#E8F4E8;color:var(--green);}
+  .badge-bad{background:#FEE8E8;color:var(--red);}
+  .badge-neutral{background:var(--paper);color:var(--ink3);}
+  .badge-warn{background:#FFF3E0;color:#E65100;}
+  /* Prev/Next nav */
+  .detail-nav{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:0.75rem 2rem;border-top:1px solid var(--border);background:var(--paper);border-radius:0 0 12px 12px;}
+  .nav-btn{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:0.78rem;color:var(--ink2);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+  .nav-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .nav-btn:disabled{opacity:0.35;cursor:default;}
+  .nav-btn-photo{width:28px;height:28px;object-fit:cover;object-position:top;border-radius:3px;background:var(--paper);}
+  .nav-center{font-size:0.7rem;color:var(--ink3);text-align:center;}
+  /* Placeholder with initials */
+  .photo-initials{width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--paper) 0%,var(--border) 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--ink3);}
+  .chart-container{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;}
+  .chart-title{font-size:0.72rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.8rem;}
+  .influences-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .influence-tag{padding:5px 12px;background:var(--paper);border:1px solid var(--border);border-radius:20px;font-size:0.78rem;color:var(--ink2);}
+  .timeline-item{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+  .timeline-year{font-size:0.72rem;font-weight:600;color:var(--gold);min-width:40px;}
+  .timeline-text{font-size:0.8rem;color:var(--ink2);line-height:1.4;}
+
+  /* COMPARE MODAL */
+  .compare-overlay{position:fixed;inset:0;background:rgba(26,18,8,0.6);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+  .compare-overlay.open{display:flex;}
+  .compare-modal{background:var(--cream);width:100%;max-width:1100px;border-radius:12px;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+  .compare-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+  .compare-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;}
+  .compare-close{background:none;border:1px solid var(--border);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:0.82rem;}
+  .compare-cols{display:grid;gap:1rem;margin-bottom:1.5rem;}
+  .compare-col{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1rem;}
+  .compare-col-header{display:flex;gap:10px;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+  .compare-col-photo{width:48px;height:48px;object-fit:cover;object-position:top;border-radius:4px;background:var(--paper);}
+  .compare-col-name{font-family:'Playfair Display',serif;font-weight:700;font-size:0.95rem;}
+  .compare-col-period{font-size:0.72rem;color:var(--ink3);}
+  .compare-row{display:grid;gap:0.5rem;margin-bottom:0.75rem;}
+  .compare-metric-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink3);margin-bottom:6px;padding-left:2px;}
+  .compare-value{font-size:0.85rem;padding:6px 10px;border-radius:4px;background:var(--paper);}
+  .compare-chart-area{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1rem;}
+  .empty-state{text-align:center;padding:4rem 2rem;color:var(--ink3);}
+  .empty-icon{font-size:3rem;margin-bottom:1rem;}
+  .empty-text{font-size:0.9rem;}
+
+  /* MOBILE MENU TOGGLE */
+  .mobile-menu-btn{display:none;background:none;border:1px solid rgba(255,255,255,0.25);color:var(--cream);width:38px;height:38px;border-radius:6px;cursor:pointer;font-size:1.2rem;flex-shrink:0;align-items:center;justify-content:center;}
+  .mobile-menu-btn:hover{background:rgba(255,255,255,0.1);}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(26,18,8,0.5);z-index:99;}
+
+  /* TABLET: <=900px */
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr;padding:1rem;}
+    .sidebar{position:static;height:auto;}
+    .detail-hero{grid-template-columns:140px 1fr;}
+    .detail-photo,.detail-photo-ph{width:140px;min-height:180px;}
+    .compare-cols{grid-template-columns:1fr!important;}
+    .stats-hero{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* MOBILE: <=600px */
+  @media(max-width:600px){
+    /* Header */
+    .header-inner{padding:0 0.75rem;gap:0.5rem;height:56px;}
+    .logo{font-size:0.85rem;}
+    .logo .logo-subtitle{display:none;}
+    .header-search{max-width:none;flex:1;min-width:0;}
+    .header-search input{padding:8px 10px;font-size:0.85rem;border-radius:6px;}
+    .header-actions{gap:6px;}
+    .btn-compare{padding:8px 10px;font-size:0.75rem;}
+    .mobile-menu-btn{display:inline-flex;}
+
+    /* Sidebar as slide-in drawer */
+    .sidebar{
+      position:fixed;top:0;left:0;width:85vw;max-width:320px;height:100vh;
+      background:var(--cream);z-index:100;
+      transform:translateX(-100%);transition:transform 0.3s ease;
+      padding:1rem;overflow-y:auto;
+      box-shadow:4px 0 20px rgba(0,0,0,0.2);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-backdrop.open{display:block;}
+
+    /* App layout */
+    .app{padding:0.75rem;gap:1rem;}
+
+    /* Stats hero */
+    .stats-hero{grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1rem;}
+    .stat-card{padding:0.6rem 0.5rem;}
+    .stat-num{font-size:1.2rem;}
+    .stat-label{font-size:0.6rem;}
+
+    /* Results bar */
+    .results-bar{flex-wrap:wrap;gap:0.5rem;}
+
+    /* Presidents grid */
+    .presidents-grid{grid-template-columns:repeat(2,1fr);gap:0.6rem;}
+    .pcard-body{padding:0.6rem;}
+    .pcard-name{font-size:0.78rem;}
+    .pcard-period{font-size:0.65rem;}
+    .pcard-party{font-size:0.6rem;}
+    .pcard-indicators{display:none;}
+    .pcard-compare-btn{width:26px;height:26px;font-size:0.75rem;}
+    .pcard-flag{font-size:0.55rem;padding:2px 5px;}
+
+    /* Detail panel full-screen */
+    .detail-overlay{padding:0;align-items:stretch;justify-content:stretch;}
+    .detail-panel{width:100%;max-height:100vh;border-radius:0;max-width:100vw;}
+    .detail-hero{grid-template-columns:1fr;gap:0;}
+    .detail-photo,.detail-photo-ph{width:100%;min-height:200px;max-height:40vh;border-radius:0;}
+    .detail-header{border-radius:0;padding:1.25rem;}
+    .detail-name{font-size:1.35rem;}
+    .detail-period{font-size:0.8rem;}
+    .detail-meta-chips{gap:4px;}
+    .dmchip{font-size:0.68rem;padding:3px 8px;}
+    .detail-close{top:0.5rem;right:0.5rem;width:32px;height:32px;background:rgba(0,0,0,0.4);color:#fff;}
+    .detail-section{padding:1rem;}
+    .detail-section-title{font-size:0.65rem;}
+    .bio-text{font-size:0.83rem;}
+    .bio-lead{font-size:0.92rem;}
+    .info-grid{grid-template-columns:repeat(2,1fr);gap:0.5rem;}
+    .indicators-grid{grid-template-columns:repeat(2,1fr);gap:0.5rem;}
+
+    /* Detail tabs scrollable */
+    .detail-tabs{padding:0 1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .detail-tabs::-webkit-scrollbar{display:none;}
+    .detail-tab{padding:0.7rem 0.8rem;font-size:0.75rem;}
+
+    /* Detail nav */
+    .detail-nav{padding:0.6rem 1rem;flex-wrap:wrap;gap:6px;}
+    .nav-btn{padding:8px 10px;font-size:0.75rem;}
+
+    /* Compare modal full-screen */
+    .compare-overlay{padding:0;}
+    .compare-modal{border-radius:0;padding:1rem;max-height:100vh;overflow-y:auto;}
+    .compare-title{font-size:1.1rem;}
+    .compare-close{padding:8px 12px;font-size:0.78rem;}
+
+    /* Filter chips bigger for touch */
+    .chip{padding:6px 12px;font-size:0.78rem;}
+
+    /* Rank section */
+    .rank-item{padding:8px 0;font-size:0.78rem;}
+
+    /* Hitos timeline */
+    .hito-text{font-size:0.8rem;}
+
+    /* Curiosidades */
+    .curio-card{padding:0.65rem 0.8rem;}
+    .curio-card-text{font-size:0.8rem;}
+
+    /* Influences */
+    .influence-tag{padding:6px 10px;font-size:0.75rem;}
+
+    /* Quote */
+    .quote-text{font-size:0.9rem;}
+  }
+
+  /* VERY SMALL: <=380px */
+  @media(max-width:380px){
+    .presidents-grid{grid-template-columns:1fr;}
+    .stats-hero{grid-template-columns:repeat(2,1fr);}
+    .info-grid{grid-template-columns:1fr;}
+    .indicators-grid{grid-template-columns:1fr;}
+    .header-actions .btn-compare:last-child{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Filtros">☰</button>
+    <div class="logo"><span>Presidentes</span> <span class="logo-subtitle">de la República Argentina</span></div>
+    <div class="header-search"><input type="text" id="searchInput" placeholder="Buscar presidente..."></div>
+    <div class="header-actions">
+      <button class="btn-compare" onclick="openCompare()">Comparar <span class="compare-badge" id="compareBadge">0</span></button>
+      <button class="btn-compare" style="background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,0.3);" onclick="clearCompare()">Limpiar</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
+  <aside class="sidebar" id="sidebarPanel">
+    <div class="filter-section">
+      <div class="filter-title">Era Histórica</div>
+      <div class="filter-chips" id="eraFilters">
+        <span class="chip active" data-era="all">Todas</span>
+        <span class="chip" data-era="siglo19">Siglo XIX</span>
+        <span class="chip" data-era="turn">1900–1943</span>
+        <span class="chip" data-era="peronismo">Peronismo clásico</span>
+        <span class="chip" data-era="dictaduras">Dictaduras</span>
+        <span class="chip" data-era="democracia">Democracia 1983+</span>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Tipo de Mandato</div>
+      <div class="filter-chips" id="tipoFilters">
+        <span class="chip active" data-tipo="all">Todos</span>
+        <span class="chip" data-tipo="electo">Electo</span>
+        <span class="chip" data-tipo="facto">De Facto</span>
+        <span class="chip" data-tipo="interino">Interino</span>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Partido / Tendencia</div>
+      <div class="filter-chips" id="partidoFilters">
+        <span class="chip active" data-partido="all">Todos</span>
+        <span class="chip" data-partido="UCR">UCR</span>
+        <span class="chip" data-partido="PJ">PJ / Peronismo</span>
+        <span class="chip" data-partido="conservador">Conservador</span>
+        <span class="chip" data-partido="militar">Militar</span>
+        <span class="chip" data-partido="liberal">Liberal / Otro</span>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Origen</div>
+      <div class="filter-chips" id="origenFilters">
+        <span class="chip active" data-origen="all">Todos</span>
+        <span class="chip" data-origen="Buenos Aires">Bs. As.</span>
+        <span class="chip" data-origen="Interior">Interior</span>
+        <span class="chip" data-origen="Extranjero">Nacido fuera</span>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-stats" id="filterStats">Mostrando <strong>0</strong> presidentes</div>
+    </div>
+    <div class="rank-section" id="rankSection">
+      <div class="filter-title">🏆 Más tiempo en el poder</div>
+      <div id="rankList"></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="stats-hero">
+      <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Presidentes totales</div></div>
+      <div class="stat-card"><div class="stat-num" id="statElectos">—</div><div class="stat-label">Electos</div></div>
+      <div class="stat-card"><div class="stat-num" id="statFacTo">—</div><div class="stat-label">De Facto</div></div>
+      <div class="stat-card"><div class="stat-num" id="statInterinos">—</div><div class="stat-label">Interinos</div></div>
+    </div>
+    <div class="results-bar">
+      <span class="results-count" id="resultsCount"></span>
+      <select class="sort-select" id="sortSelect" onchange="renderGrid()">
+        <option value="cronologico">Cronológico</option>
+        <option value="nombre">Nombre A–Z</option>
+        <option value="duracion">Mayor duración</option>
+      </select>
+    </div>
+    <div class="presidents-grid" id="presidentsGrid"></div>
+  </main>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detailOverlay" onclick="handleOverlayClick(event)">
+  <div class="detail-panel" id="detailPanel">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="compare-overlay" id="compareOverlay" onclick="handleCompareClick(event)">
+  <div class="compare-modal">
+    <div class="compare-header">
+      <div class="compare-title">Comparar Presidentes</div>
+      <button class="compare-close" onclick="closeCompare()">✕ Cerrar</button>
+    </div>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
+<script>
+/* Mobile sidebar toggle */
+function toggleMobileSidebar(){
+  const sidebar=document.getElementById('sidebarPanel');
+  const backdrop=document.getElementById('sidebarBackdrop');
+  const isOpen=sidebar.classList.contains('open');
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open');
+  document.body.style.overflow=isOpen?'':'hidden';
+}
+
+const PARTY_COLORS = {
+  'UCR': {bg:'#E8EEF8',color:'#1A3A7C'},
+  'PJ': {bg:'#F8F0E8',color:'#7C3A1A'},
+  'conservador': {bg:'#EEF8EE',color:'#1A5A2A'},
+  'militar': {bg:'#F0EEF8',color:'#3A1A7C'},
+  'liberal': {bg:'#F8E8E8',color:'#7C1A1A'},
+  'FPV': {bg:'#F8F0E8',color:'#7C3A1A'},
+  'Cambiemos': {bg:'#E8F0F8',color:'#1A507C'},
+  'LLA': {bg:'#F8E8E8',color:'#7C1A3A'},
+  default: {bg:'#F0EEE8',color:'#5A4A30'}
+};
+
+const presidents = [
+  {id:1,nombre:"Bernardino Rivadavia",periodo:"1826–1827",inicio:1826,fin:1827,tipo:"electo",origen:"Buenos Aires",era:"siglo19",partido:"liberal",partidoLabel:"Liberal unitario",
+   wiki:"Bernardino_Rivadavia",
+   frase:{texto:"«La patria no necesita tiranos que la fuercen, sino ciudadanos que la amen.»",fuente:"Discurso al Congreso, 1826"},
+   curiosidades:["Primer presidente constitucional de la historia argentina", "Fundó la UBA en 1821, antes de ser presidente", "Murió exiliado en Cádiz, España"],
+   bio:"Primer presidente constitucional de la Argentina. Estadista ilustrado de ideología liberal y unitaria, impulsó reformas educativas, religiosas y administrativas de gran alcance. Creó la Universidad de Buenos Aires en 1821. Su presidencia fue breve y conflictiva, renunciando ante la presión de los caudillos provinciales.",
+   nacimiento:1780,fallecimiento:1845,profesion:"Abogado, político",lugarnac:"Buenos Aires",
+   influencias:["Ilustración francesa","Liberalismo inglés","Jeremy Bentham"],
+   hitos:["Funda la Universidad de Buenos Aires (1821)","Sanción de la Constitución unitaria (1826)","Guerra con el Imperio de Brasil por la Banda Oriental (1826)","Renuncia ante presión de caudillos federales (1827)","Creación del Banco de las Provincias del Río de la Plata (1822)"],
+   indicadores:{inflacion:"N/D",pbi:"N/D",desempleo:"N/D",pobreza:"N/D",deuda:"Alta",conflicto:"Guerra con Brasil",balance:"Superávit nulo"}},
+
+  {id:2,nombre:"Juan Manuel de Rosas",periodo:"1829–1832 / 1835–1852",inicio:1829,fin:1852,tipo:"facto",origen:"Buenos Aires",era:"siglo19",partido:"conservador",partidoLabel:"Federal",
+   wiki:"Juan_Manuel_de_Rosas",
+   frase:{texto:"«¡Mueran los salvajes unitarios!»",fuente:"Consigna federal, 1840"},
+   curiosidades:["Gobernó 20 años en total, el récord histórico", "Nunca usó el título 'presidente'; se llamaba 'Restaurador de las Leyes'", "Murió a los 83 años exiliado en Southampton, Inglaterra"],
+   bio:"Caudillo federal y figura central del siglo XIX argentino. Gobernó con mano de hierro, controlando las relaciones exteriores de la Confederación. Su régimen, apoyado por la Mazorca, reprimió duramente a los unitarios. Fue derrocado en Caseros por Urquiza y murió exiliado en Southampton.",
+   nacimiento:1793,fallecimiento:1877,profesion:"Estanciero, militar",lugarnac:"Buenos Aires",
+   influencias:["Caudillismo federal","Catolicismo conservador"],
+   hitos:["Primer gobierno: represión de unitarios (1829–1832)","Bloqueo francés al Río de la Plata (1838–1840)","Bloqueo anglo-francés y resistencia (1845–1848)","Acuerdo de San Nicolás entre provincias (1851)","Derrota en la Batalla de Caseros frente a Urquiza (1852)","Exilio definitivo en Southampton, Inglaterra (1852)"],
+   indicadores:{inflacion:"Alta (guerras)",pbi:"Estancado",desempleo:"N/D",pobreza:"Alta rural",deuda:"Externa mínima",conflicto:"Guerras civiles","balance":"Superávit ganadero"}},
+
+  {id:3,nombre:"Justo José de Urquiza",periodo:"1854–1860",inicio:1854,fin:1860,tipo:"electo",origen:"Interior",era:"siglo19",partido:"conservador",partidoLabel:"Federal liberal",
+   wiki:"Justo_José_de_Urquiza",
+   frase:{texto:"«La Constitución es el alma de los pueblos libres.»",fuente:"Discurso en Paraná, 1853"},
+   curiosidades:["Fue asesinado en su propia estancia El Palmar en 1870", "Impulsó la Constitución de 1853, base del orden institucional", "Era el hombre más rico de Entre Ríos"],
+   bio:"Primer presidente constitucional de la Confederación Argentina tras derrocar a Rosas. Promulgó la Constitución de 1853, base del orden institucional argentino. Entreriano de origen, representó al interior frente a Buenos Aires. Fue asesinado en su estancia El Palmar en 1870.",
+   nacimiento:1801,fallecimiento:1870,profesion:"Militar, estanciero",lugarnac:"Entre Ríos",
+   influencias:["Alberdi","Constitucionalismo liberal","Federalismo americano"],
+   hitos:["Promulgación de la Constitución Nacional (1853)","Instalación del gobierno en Paraná (1854)","Batalla de Cepeda: derrota porteña (1859)","Pacto de San José de Flores: Buenos Aires se une (1859)","Batalla de Pavón frente a Mitre (1861)","Creación del Colegio Nacional de Concepción del Uruguay (1854)"],
+   indicadores:{inflacion:"Moderada",pbi:"Incipiente",desempleo:"N/D",pobreza:"Alta",deuda:"Baja",conflicto:"Conflicto con Bs.As.","balance":"Equilibrado"}},
+
+  {id:4,nombre:"Bartolomé Mitre",periodo:"1862–1868",inicio:1862,fin:1868,tipo:"electo",origen:"Buenos Aires",era:"siglo19",partido:"liberal",partidoLabel:"Partido Liberal",
+   wiki:"Bartolomé_Mitre",
+   frase:{texto:"«La historia es la maestra de la vida.»",fuente:"Discurso en el Congreso, 1864"},
+   curiosidades:["Fundó el diario La Nación en 1870, que aún existe", "Tradujo la Divina Comedia de Dante al español", "Fue general, historiador, periodista y presidente a la vez"],
+   bio:"General, historiador y estadista que consolidó la unidad nacional y organizó el Estado argentino moderno. Fundó el diario La Nación. Lideró la Triple Alianza contra Paraguay. Traductor de la Divina Comedia, es considerado el padre del liberalismo argentino.",
+   nacimiento:1821,fallecimiento:1906,profesion:"Militar, periodista, historiador",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo unitario","Historia positivista"],
+   hitos:["Unificación nacional y capital en Buenos Aires (1862)","Inicio de la Guerra de la Triple Alianza contra Paraguay (1865)","Creación del Código Civil por Vélez Sársfield (1869)","Fundación del diario La Nación (1870)","Organización del Ejército Nacional (1864)","Levantamiento mitrista contra Avellaneda (1874)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento lento",desempleo:"N/D",pobreza:"Alta rural",deuda:"Primeros empréstitos",conflicto:"Guerra Paraguay","balance":"Déficit por guerra"}},
+
+  {id:5,nombre:"Domingo Faustino Sarmiento",periodo:"1868–1874",inicio:1868,fin:1874,tipo:"electo",origen:"Interior",era:"siglo19",partido:"liberal",partidoLabel:"Liberal progresista",
+   wiki:"Domingo_Faustino_Sarmiento",
+   frase:{texto:"«Las escuelas son los cuarteles de la civilización.»",fuente:"Mensaje presidencial, 1869"},
+   curiosidades:["Construyó más de 800 escuelas durante su mandato", "Trajo maestras estadounidenses para modernizar la educación", "Escribió el Facundo, primer gran ensayo político latinoamericano"],
+   bio:"Maestro, escritor y presidente que transformó la educación argentina. Autor del Facundo. Su política educativa sentó las bases del sistema público de instrucción. Gran admirador del modelo norteamericano, construyó miles de escuelas y trajo maestras de Estados Unidos.",
+   nacimiento:1811,fallecimiento:1888,profesion:"Maestro, escritor, político",lugarnac:"San Juan",
+   influencias:["Horace Mann","Liberalismo norteamericano","Ilustración"],
+   hitos:["Creación del Observatorio Astronómico de Córdoba (1871)","Contratación de 65 maestras norteamericanas (1869)","Ley de Educación Común de la Provincia de Buenos Aires (1875)","Fundación del Colegio Militar de la Nación (1869)","Fundación de la Escuela Naval (1872)","Finalización de la Guerra de la Triple Alianza (1870)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento moderado",desempleo:"N/D",pobreza:"Alta",deuda:"Moderada",conflicto:"Guerras internas menores","balance":"Déficit moderado"}},
+
+  {id:6,nombre:"Nicolás Avellaneda",periodo:"1874–1880",inicio:1874,fin:1880,tipo:"electo",origen:"Interior",era:"siglo19",partido:"liberal",partidoLabel:"Partido Autonomista",
+   wiki:"Nicolás_Avellaneda",
+   frase:{texto:"«Antes de honrar la deuda externa, hay que honrar la deuda interna con el pueblo.»",fuente:"Discurso al Congreso, 1876"},
+   curiosidades:["Fue el presidente más joven en asumir: con 37 años", "Renegoció exitosamente la deuda en la crisis de 1873", "Impulsó la federalización de Buenos Aires como capital"],
+   bio:"El presidente más joven de Argentina (37 años al asumir). Consolidó las finanzas públicas en medio de una crisis económica global. Impulsó la Conquista del Desierto con Roca y federalizó Buenos Aires como capital del país.",
+   nacimiento:1836,fallecimiento:1885,profesion:"Abogado, político",lugarnac:"Tucumán",
+   influencias:["Liberalismo clásico","Positivismo"],
+   hitos:["Inicio de la Conquista del Desierto con el Gral. Roca (1878)","Federalización de Buenos Aires como capital (1880)","Renegociación exitosa de la deuda externa (1876)","Ley de Inmigración y Colonización (1876)","Sofocamiento del levantamiento de Mitre (1874)","Fundación de la ciudad de La Plata (1882, bajo Roca)"],
+   indicadores:{inflacion:"Alta (crisis 1873)",pbi:"Caída y recuperación",desempleo:"N/D",pobreza:"Alta",deuda:"Renegociación exitosa",conflicto:"Levantamiento de Mitre","balance":"Equilibrado al final"}},
+
+  {id:7,nombre:"Julio Argentino Roca",periodo:"1880–1886 / 1898–1904",inicio:1880,fin:1904,tipo:"electo",origen:"Interior",era:"siglo19",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Julio_Argentino_Roca",
+   frase:{texto:"«Paz y administración.»",fuente:"Lema de gobierno, 1880"},
+   curiosidades:["Único presidente del siglo XIX en gobernar dos veces no consecutivas", "Su Conquista del Desierto incorporó la Patagonia al territorio nacional", "Aparece en el billete de 100 pesos (en uso durante décadas)"],
+   bio:"El presidente más influyente del siglo XIX argentino. Comandó la Conquista del Desierto (1879) que anexó la Patagonia. Bajo su lema 'Paz y Administración' construyó el Estado moderno, el ferrocarril y la inmigración masiva. Figura controvertida por las consecuencias sobre las poblaciones originarias.",
+   nacimiento:1843,fallecimiento:1914,profesion:"Militar, político",lugarnac:"Tucumán",
+   influencias:["Positivismo comtiano","Spencer","Alberdi"],
+   hitos:["Conquista del Desierto: incorporación de la Patagonia (1879)","Ley 1420 de educación laica, gratuita y obligatoria (1884)","Boom inmigratorio: llegada masiva de europeos (1880–1886)","Fundación de la ciudad de La Plata (1882)","Pacto Roca-Runciman 2° período (1902)","Límites con Chile resueltos por arbitraje (1902)"],
+   indicadores:{inflacion:"Baja",pbi:"Fuerte crecimiento",desempleo:"Bajo (inmigración)",pobreza:"Moderada",deuda:"Altos empréstitos",conflicto:"Campaña al desierto","balance":"Superávit"}},
+
+  {id:8,nombre:"Miguel Juárez Celman",periodo:"1886–1890",inicio:1886,fin:1890,tipo:"electo",origen:"Interior",era:"siglo19",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Miguel_Juárez_Celman",
+   frase:{texto:"«El progreso material es la base de toda libertad.»",fuente:"Discurso presidencial, 1888"},
+   curiosidades:["Único presidente del siglo XIX en renunciar bajo presión", "La crisis de 1890 se conoció como 'el año del pánico'", "Era cuñado de Julio A. Roca"],
+   bio:"Su gobierno terminó con la Revolución del Parque de 1890, primer levantamiento cívico-militar del siglo XX argentino. La crisis financiera y la emisión descontrolada llevaron al país al colapso económico. Fue el único presidente en renunciar hasta Eduardo Duhalde.",
+   nacimiento:1844,fallecimiento:1909,profesion:"Abogado, político",lugarnac:"Córdoba",
+   influencias:["Liberalismo económico","Roquismo"],
+   hitos:["Emisión descontrolada de moneda y especulación (1888–1890)","Crisis Baring Brothers: colapso financiero (1890)","Revolución del Parque: primer levantamiento cívico-militar (1890)","Renuncia bajo presión popular y política (1890)","Privatización masiva de ferrocarriles (1887)","Fundación de la UCR por Leandro N. Alem (1891)"],
+   indicadores:{inflacion:"Muy alta",pbi:"Crisis severa",desempleo:"Alto",pobreza:"Creciente",deuda:"Crisis Baring Brothers",conflicto:"Revolución del Parque","balance":"Déficit crítico"}},
+
+  {id:9,nombre:"Carlos Pellegrini",periodo:"1890–1892",inicio:1890,fin:1892,tipo:"electo",origen:"Buenos Aires",era:"siglo19",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Carlos_Pellegrini",
+   frase:{texto:"«El crédito de la Nación es su honor mismo.»",fuente:"Al fundar el Banco Nación, 1891"},
+   curiosidades:["Fundó el Banco de la Nación Argentina en 1891", "Evitó la cesación de pagos en la crisis Baring", "Su apodo era 'El Gringo' por su ascendencia italiana"],
+   bio:"Asumió tras la renuncia de Juárez Celman en plena crisis. Fundó el Banco de la Nación Argentina en 1891 y logró renegociar la deuda externa evitando la cesación de pagos. Su gestión fue clave para la estabilización financiera del país.",
+   nacimiento:1846,fallecimiento:1906,profesion:"Abogado, político",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo conservador","Pragmatismo financiero"],
+   hitos:["Fundación del Banco de la Nación Argentina (1891)","Renegociación exitosa de la deuda Baring Brothers (1891)","Estabilización financiera post-crisis (1891–1892)","Represión de la segunda Revolución Radical (1893)","Creación del Banco Hipotecario Nacional (1886, consolida en su gestión)","Saneamiento del sistema bancario nacional (1891)"],
+   indicadores:{inflacion:"Declinando",pbi:"Recuperación",desempleo:"Alto aún",pobreza:"Alta",deuda:"Reestructurada",conflicto:"Crisis política","balance":"Equilibrado"}},
+
+  {id:10,nombre:"Luis Sáenz Peña",periodo:"1892–1895",inicio:1892,fin:1895,tipo:"electo",origen:"Buenos Aires",era:"siglo19",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Luis_Sáenz_Peña",
+   frase:{texto:"«El sufragio es la expresión más genuina de la soberanía popular.»",fuente:"Discurso presidencial, 1892"},
+   curiosidades:["Era padre del reformador Roque Sáenz Peña", "Segundo presidente en renunciar antes de terminar su mandato", "Fue juez de la Suprema Corte antes de ser presidente"],
+   bio:"Padre del presidente Roque Sáenz Peña. Su mandato fue marcado por las tensiones entre las distintas fracciones del PAN y los radicales. Renunció ante la presión política en 1895.",
+   nacimiento:1822,fallecimiento:1907,profesion:"Abogado, magistrado",lugarnac:"Buenos Aires",
+   influencias:["Conservadurismo liberal"],
+   hitos:["Revolución Radical de julio de 1893 (reprimida)","Crisis política interna del PAN (1893–1895)","Renuncia presidencial ante la presión opositora (1895)","Nombramiento de gabinetes con radicales (intento de conciliación, 1893)","Legislación de arbitraje laboral (1894)"],
+   indicadores:{inflacion:"Moderada",pbi:"Recuperación",desempleo:"Moderado",pobreza:"Alta",deuda:"Manejada",conflicto:"Tensiones radicales","balance":"Equilibrado"}},
+
+  {id:11,nombre:"José Evaristo Uriburu",periodo:"1895–1898",inicio:1895,fin:1898,tipo:"interino",origen:"Interior",era:"siglo19",partido:"conservador",partidoLabel:"PAN",
+   wiki:"José_Evaristo_Uriburu",
+   frase:{texto:"«Gobernar es cumplir con la ley.»",fuente:"Mensaje al Congreso, 1896"},
+   curiosidades:["Vicepresidente que asumió por renuncia de Sáenz Peña", "Era salteño, de las provincias del noroeste que menos presidentes aportaron", "Completó el mandato sin escándalos ni grandes reformas"],
+   bio:"Vicepresidente que asumió tras la renuncia de Sáenz Peña. Completó el mandato sin grandes reformas. Mantuvo el sistema oligárquico del PAN.",
+   nacimiento:1831,fallecimiento:1914,profesion:"Abogado, político",lugarnac:"Salta",
+   influencias:["Conservadurismo"],
+   hitos:["Asunción por renuncia de Luis Sáenz Peña (1895)","Estabilización política tras los conflictos radicales (1895–1897)","Presupuesto nacional equilibrado (1896)","Mantenimiento de la paz interior sin grandes reformas (1895–1898)","Entrega del poder a Roca sin conflictos (1898)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento",desempleo:"N/D",pobreza:"Alta",deuda:"Estable",conflicto:"Bajo","balance":"Superávit leve"}},
+
+  {id:12,nombre:"Roque Sáenz Peña",periodo:"1910–1914",inicio:1910,fin:1914,tipo:"electo",origen:"Buenos Aires",era:"turn",partido:"conservador",partidoLabel:"PAN liberal",
+   wiki:"Roque_Sáenz_Peña",
+   frase:{texto:"«Quiero que voten los que nunca han votado.»",fuente:"Sobre la reforma electoral, 1911"},
+   curiosidades:["Murió en ejercicio en 1914 sin ver aplicada su propia ley", "La Ley Sáenz Peña: voto universal, secreto y obligatorio, fue revolucionaria", "Había combatido como voluntario en la guerra del Perú contra Chile"],
+   bio:"Impulsó la Ley Sáenz Peña (1912) que instauró el sufragio universal masculino, secreto y obligatorio, transformando radicalmente la democracia argentina. Falleció antes de completar su mandato. Fue el gran reformador del sistema electoral argentino.",
+   nacimiento:1851,fallecimiento:1914,profesion:"Abogado, diplomático",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo reformista","Democracia representativa"],
+   hitos:["Sanción de la Ley Sáenz Peña: voto secreto y obligatorio (1912)","Primera elección presidencial con voto universal masculino (1916)","Muerte en ejercicio antes de ver su reforma aplicada (1914)","Celebración del Centenario de la Revolución de Mayo (1910)","Huelga general de la FORA durante el Centenario (1910)","Asunción de Victorino de la Plaza como vice (1913)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento agroexportador",desempleo:"Bajo",pobreza:"Moderada",deuda:"Estable",conflicto:"Bajo","balance":"Superávit"}},
+
+  {id:13,nombre:"Hipólito Yrigoyen",periodo:"1916–1922 / 1928–1930",inicio:1916,fin:1930,tipo:"electo",origen:"Buenos Aires",era:"turn",partido:"UCR",partidoLabel:"UCR",
+   wiki:"Hipólito_Yrigoyen",
+   frase:{texto:"«La UCR no es un partido, es una causa.»",fuente:"Discurso radical, 1916"},
+   curiosidades:["Primer presidente elegido por sufragio universal en Argentina", "Nunca se casó y vivió con extrema austeridad", "Su segundo gobierno terminó con el primer golpe del siglo XX (1930)"],
+   bio:"Primer presidente elegido por sufragio universal en Argentina. Líder indiscutido de la UCR, gobernó dos períodos no consecutivos. Su segunda presidencia terminó con el primer golpe de Estado del siglo XX (1930). La Semana Trágica (1919) fue el episodio más oscuro de su primer gobierno.",
+   nacimiento:1852,fallecimiento:1933,profesion:"Político, maestro",lugarnac:"Buenos Aires",
+   influencias:["Krausismo","Radicalismo personalista"],
+   hitos:["Primera presidencia con voto universal masculino (1916)","Reforma Universitaria de Córdoba (1918)","Semana Trágica: masacre obrera en Buenos Aires (1919)","Creación de YPF: empresa petrolera estatal (1922)","Patagonia rebelde: fusilamiento de peones (1921)","Golpe de Estado de Uriburu: fin del 2° gobierno (1930)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento 1916-22, caída 1929",desempleo:"Variable",pobreza:"Moderada",deuda:"Creciente",conflicto:"Semana Trágica","balance":"Deficitario"}},
+
+  {id:14,nombre:"Marcelo T. de Alvear",periodo:"1922–1928",inicio:1922,fin:1928,tipo:"electo",origen:"Buenos Aires",era:"turn",partido:"UCR",partidoLabel:"UCR Antipersonalista",
+   wiki:"Marcelo_Torcuato_de_Alvear",
+   frase:{texto:"«El progreso argentino no admite interrupciones.»",fuente:"Mensaje presidencial, 1924"},
+   curiosidades:["Sus trajes los hacía un sastre londinense de lujo", "Viajó a Europa más de 14 veces a lo largo de su vida", "Su gobierno coincidió con el mayor auge económico de la historia argentina"],
+   bio:"Aristócrata radical, representó la facción antipersonalista de la UCR. Su gestión coincidió con los 'locos años 20' de bonanza económica. Fue el presidente que más invirtió en obras públicas hasta ese momento.",
+   nacimiento:1868,fallecimiento:1942,profesion:"Abogado, diplomático",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo moderado","Radicalismo antipersonalista"],
+   hitos:["Expansión de YPF bajo el Gral. Mosconi (1922–1928)","Grandes obras de infraestructura vial y portuaria (1924–1927)","Auge económico de los 'locos años 20' (1923–1928)","Creación del Ministerio de Educación (1923)","Ruptura política con Yrigoyen: UCR se divide (1924)","Primera transmisión de radio oficial desde Casa Rosada (1925)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento robusto",desempleo:"Bajo",pobreza:"Moderada",deuda:"Manejada",conflicto:"Bajo","balance":"Equilibrado"}},
+
+  {id:15,nombre:"José F. Uriburu",periodo:"1930–1932",inicio:1930,fin:1932,tipo:"facto",origen:"Interior",era:"dictaduras",partido:"militar",partidoLabel:"Militar-Nacionalista",
+   wiki:"José_Félix_Uriburu",
+   frase:{texto:"«El ejército ha salvado a la Nación del caos.»",fuente:"Proclama del golpe, 1930"},
+   curiosidades:["Primer dictador del siglo XX en Argentina", "Tenía ideas corporativistas inspiradas en Mussolini", "Su golpe del 6 de septiembre de 1930 inauguró décadas de inestabilidad"],
+   bio:"Lideró el primer golpe de Estado del siglo XX en Argentina, derrocando a Yrigoyen el 6 de septiembre de 1930. De tendencia fascista y corporativista, instauró la 'Década Infame'. Reprimió duramente al radicalismo y a los comunistas.",
+   nacimiento:1868,fallecimiento:1932,profesion:"Militar",lugarnac:"Salta",
+   influencias:["Fascismo italiano","Nacionalismo conservador"],
+   hitos:["Golpe de Estado contra Yrigoyen (6 sept. 1930)","Disolución del Congreso Nacional (1930)","Uso de la picana eléctrica como método de tortura (1930)","Intervención federal de todas las provincias (1930)","Elecciones fraudulentas que benefician a Justo (1931)","Muerte en el cargo antes de entregar el poder (1932)"],
+   indicadores:{inflacion:"Alta (crisis 1929)",pbi:"Caída fuerte",desempleo:"Muy alto",pobreza:"Crítica",deuda:"Crisis",conflicto:"Represión política","balance":"Déficit"}},
+
+  {id:16,nombre:"Agustín P. Justo",periodo:"1932–1938",inicio:1932,fin:1938,tipo:"electo",origen:"Buenos Aires",era:"dictaduras",partido:"conservador",partidoLabel:"Concordancia",
+   wiki:"Agustín_Pedro_Justo",
+   frase:{texto:"«El orden y la prosperidad son inseparables.»",fuente:"Discurso presidencial, 1933"},
+   curiosidades:["El polémico Pacto Roca-Runciman subordinó la economía al Reino Unido", "Creó el Banco Central de la República Argentina en 1935", "Ganó con fraude sistemático conocido como 'fraude patriótico'"],
+   bio:"General electo en elecciones fraudulentas. Su gobierno fue parte de la 'Década Infame'. Firmó el Pacto Roca-Runciman con Gran Bretaña (1933), muy criticado como subordinación económica. Creó el Banco Central y la Junta Nacional de Granos.",
+   nacimiento:1876,fallecimiento:1943,profesion:"Militar, ingeniero",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo conservador","Pro-británico"],
+   hitos:["Pacto Roca-Runciman con Gran Bretaña (1933)","Creación del Banco Central de la República Argentina (1935)","Fraude electoral sistemático: la 'Década Infame' (1932–1938)","Creación de la Junta Nacional de Granos (1933)","Asesinato del Senador Enzo Bordabehere en el Senado (1935)","Inicio de la industrialización por sustitución de importaciones (1933)"],
+   indicadores:{inflacion:"Moderada",pbi:"Recuperación gradual",desempleo:"Alto",pobreza:"Alta",deuda:"Dependencia británica",conflicto:"Huelgas reprimidas","balance":"Equilibrándose"}},
+
+  {id:17,nombre:"Roberto M. Ortiz",periodo:"1938–1942",inicio:1938,fin:1942,tipo:"electo",origen:"Buenos Aires",era:"turn",partido:"UCR",partidoLabel:"UCR Antipersonalista",
+   wiki:"Roberto_Marcelino_Ortiz",
+   frase:{texto:"«La democracia es el único camino posible.»",fuente:"Mensaje al Congreso, 1940"},
+   curiosidades:["Una diabetes severa lo incapacitó durante su mandato", "Fue el primer electo de la UCR en la era del fraude conservador", "Murió en el cargo en 1942"],
+   bio:"Electo fraudulentamente pero con vocación democrática. Intervino varias provincias dominadas por el fraude. Su diabetes lo incapacitó y debió dejar el poder a Castillo. Murió en ejercicio.",
+   nacimiento:1886,fallecimiento:1942,profesion:"Abogado, político",lugarnac:"Buenos Aires",
+   influencias:["Liberalismo moderado"],
+   hitos:["Neutralidad argentina al inicio de la Segunda Guerra Mundial (1939)","Intervención de provincias con fraude electoral (1940)","Licencia por diabetes: Castillo asume interinamente (1940)","Naufragio del Graf Spee frente a Montevideo (1939)","Muerte en ejercicio por complicaciones de diabetes (1942)","Argentina rechaza adhesión al Eje (neutralidad oficial, 1940)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento",desempleo:"Moderado",pobreza:"Moderada",deuda:"Estable",conflicto:"WWII (neutral)","balance":"Superávit leve"}},
+
+  {id:18,nombre:"Ramón Castillo",periodo:"1942–1943",inicio:1942,fin:1943,tipo:"interino",origen:"Interior",era:"turn",partido:"conservador",partidoLabel:"Conservador",
+   wiki:"Ramón_S._Castillo",
+   frase:{texto:"«Argentina debe mantenerse neutral ante el conflicto mundial.»",fuente:"Discurso presidencial, 1942"},
+   curiosidades:["Mantuvo la neutralidad argentina en la Segunda Guerra Mundial", "Fue derrocado por el golpe militar del GOU en 1943", "Fue rector de la Universidad de Buenos Aires antes de presidir"],
+   bio:"Completó el mandato de Ortiz y fue derrocado por el GOU (grupo de oficiales) en el golpe de 1943. Mantuvo la neutralidad de Argentina en la Segunda Guerra Mundial pese a las presiones aliadas.",
+   nacimiento:1873,fallecimiento:1944,profesion:"Abogado, político",lugarnac:"Catamarca",
+   influencias:["Conservadurismo","Neutralismo"],
+   hitos:["Mantenimiento de neutralidad pese a presión de EE.UU. (1942)","Escándalo por elección del candidato conservador Patron Costas (1943)","Golpe del GOU: fin del gobierno civil (4 jun. 1943)","Represión de huelgas ferroviarias (1942)","Intento de reanudar fraude electoral (1943)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento industrial",desempleo:"Moderado",pobreza:"Moderada",deuda:"Estable",conflicto:"WWII (neutral)","balance":"Equilibrado"}},
+
+  {id:19,nombre:"Edelmiro Farrell",periodo:"1944–1946",inicio:1944,fin:1946,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"GOU Militar",
+   wiki:"Edelmiro_Julián_Farrell",
+   frase:{texto:"«El pueblo argentino sabrá encontrar su destino.»",fuente:"Discurso de 1945"},
+   curiosidades:["Bajo su gobierno, Perón construyó su base como Secretario de Trabajo", "El 17 de Octubre de 1945 ocurrió durante su presidencia", "Fue el último presidente de facto antes del peronismo"],
+   bio:"General que presidió el gobierno militar que abrió paso al peronismo. Fue el jefe formal mientras Perón, como Secretario de Trabajo, construía su base sindical. Declaró la guerra al Eje en los últimos días de la WWII y convocó a elecciones.",
+   nacimiento:1887,fallecimiento:1980,profesion:"Militar",lugarnac:"Buenos Aires",
+   influencias:["Nacionalismo militar","Neutralismo"],
+   hitos:["Perón como Secretario de Trabajo construye su base sindical (1944)","Declaración de guerra al Eje en los últimos días de WWII (1945)","17 de Octubre: movilización obrera libera a Perón detenido (1945)","Perón gana las elecciones presidenciales (1946)","Creación del Estatuto del Peón Rural (1944)","Argentina ingresa a la ONU (1945)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento industrial",desempleo:"Bajo (industria)",pobreza:"Moderada",deuda:"Acumulación reservas",conflicto:"WWII (tardío)","balance":"Superávit"}},
+
+  {id:20,nombre:"Juan Domingo Perón",periodo:"1946–1955 / 1973–1974",inicio:1946,fin:1974,tipo:"electo",origen:"Interior",era:"peronismo",partido:"PJ",partidoLabel:"Partido Justicialista",
+   wiki:"Juan_Domingo_Perón",
+   frase:{texto:"«Detrás de mí no hay nada, delante mío hay un pueblo.»",fuente:"Plaza de Mayo, 1945"},
+   curiosidades:["Es la figura política más influyente de la historia argentina", "Fue el único presidente en morir de muerte natural en ejercicio (1974)", "Su esposa Eva Duarte ('Evita') se convirtió en un ícono mundial"],
+   bio:"La figura más influyente de la política argentina del siglo XX. Creó el peronismo, movimiento que transformó las relaciones laborales, la industria y el rol del Estado. Con Evita como compañera y símbolo, el peronismo incorporó las clases trabajadoras a la vida política. Derrocado en 1955, regresó en 1973 y murió en ejercicio en 1974.",
+   nacimiento:1895,fallecimiento:1974,profesion:"Militar, político",lugarnac:"Lobos, Buenos Aires",
+   influencias:["Mussolini","Socialismo nacional","Justicialismo propio"],
+   hitos:["Voto femenino: ley impulsada por Evita (1947)","Constitución Justicialista: 2° mandato (1949)","Estatización de los ferrocarriles británicos (1948)","Bombardeo de Plaza de Mayo por la Marina (1955)","Golpe de la Revolución Libertadora: exilio (1955)","Regreso al país tras 18 años de exilio (1972)","Muerte en ejercicio durante el 3° mandato (1974)"],
+   indicadores:{inflacion:"Alta segunda etapa",pbi:"Gran crecimiento 1946-50",desempleo:"Muy bajo",pobreza:"Cayó fuertemente",deuda:"Pagó deuda externa",conflicto:"Bombardeo 1955","balance":"Superávit/déficit"}},
+
+  {id:21,nombre:"María Estela Martínez de Perón",periodo:"1974–1976",inicio:1974,fin:1976,tipo:"electo",origen:"Interior",era:"peronismo",partido:"PJ",partidoLabel:"Partido Justicialista",
+   wiki:"María_Estela_Martínez_de_Perón",
+   frase:{texto:"«Soy la única presidente que asumió sin pedir nada a cambio.»",fuente:"Entrevista, 1974"},
+   curiosidades:["Primera mujer presidenta de Argentina y de América del Sur", "Su nombre completo era María Estela Martínez de Perón", "Bajo su gobierno surgió la organización parapolicial Triple A"],
+   bio:"Primera presidenta mujer de Argentina y del mundo. Asumió tras la muerte de Perón. Su gobierno fue caótico: Triple A, hiperinflación, insurgencia guerrillera y corrupción. Fue derrocada el 24 de marzo de 1976 por el golpe cívico-militar más sangriento de la historia argentina.",
+   nacimiento:1931,fallecimiento:null,profesion:"Bailarina, política",lugarnac:"La Rioja",
+   influencias:["López Rega (mala influencia)","Peronismo ortodoxo"],
+   hitos:["Asunción tras muerte de Perón (1 jul. 1974)","Triple A: organización parapolicial de López Rega (1974)","Rodrigazo: brutal ajuste económico que fracasó (1975)","Inflación llega al 700% anual (1975)","Estado de Sitio: operativo Independencia en Tucumán (1975)","Golpe del 24 de marzo de 1976: inicio del Proceso"],
+   indicadores:{inflacion:"700%+ anual",pbi:"Caída severa",desempleo:"Creciente",pobreza:"Alta",deuda:"Creciendo",conflicto:"Guerrilla + Triple A","balance":"Déficit crítico"}},
+
+  {id:22,nombre:"Jorge Rafael Videla",periodo:"1976–1981",inicio:1976,fin:1981,tipo:"facto",origen:"Interior",era:"dictaduras",partido:"militar",partidoLabel:"Junta Militar",
+   wiki:"Jorge_Rafael_Videla",
+   frase:{texto:"«No somos delincuentes, somos soldados.»",fuente:"Declaración pública, 1977"},
+   curiosidades:["Fue condenado a prisión perpetua por crímenes de lesa humanidad", "Durante su gobierno desaparecieron entre 10.000 y 30.000 personas", "Murió en prisión domiciliaria en 2013"],
+   bio:"Líder del golpe del 24 de marzo de 1976. Su dictadura fue responsable de la desaparición de 30.000 personas, centros clandestinos de detención, apropiación de bebés y el mayor crimen de lesa humanidad de la historia argentina. Fue condenado a prisión perpetua en 1985 y murió en prisión.",
+   nacimiento:1925,fallecimiento:2013,profesion:"Militar",lugarnac:"Mercedes, Buenos Aires",
+   influencias:["Doctrina de Seguridad Nacional","Escuela de las Américas"],
+   hitos:["Golpe del 24 de marzo: inicio del Proceso de Reorganización Nacional (1976)","Operativo Cóndor: coordinación represiva regional (1976)","Desaparición forzada de 30.000 personas (1976–1983)","Mundial de Fútbol Argentina 1978: propaganda del régimen","Ley de entidades financieras: apertura y deuda privada (1977)","Condenado a prisión perpetua en el Juicio a las Juntas (1985)"],
+   indicadores:{inflacion:"175% promedio",pbi:"Crecimiento artificial",desempleo:"Controlado artificialmente",pobreza:"Creciente",deuda:"Estatización deuda privada",conflicto:"Terrorismo de Estado","balance":"Déficit creciente"}},
+
+  {id:23,nombre:"Roberto Viola",periodo:"1981",inicio:1981,fin:1981,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Junta Militar",
+   wiki:"Roberto_Eduardo_Viola",
+   frase:{texto:"«El diálogo es el único camino hacia la paz social.»",fuente:"Discurso presidencial, 1981"},
+   curiosidades:["Su gobierno duró solo 9 meses, uno de los más cortos de la dictadura", "Intentó abrir un diálogo con los partidos políticos", "Murió en 1994 sin haber sido juzgado"],
+   bio:"Tercer presidente de facto de la última dictadura. Su mandato fue brevísimo: asumió en marzo y fue desplazado por sus propios compañeros en diciembre de 1981 por un rumbo más político y aperturista.",
+   nacimiento:1924,fallecimiento:1994,profesion:"Militar",lugarnac:"Buenos Aires",
+   influencias:["Doctrina de Seguridad Nacional"],
+   hitos:["Intento de apertura política hacia los partidos civiles (1981)","Crisis económica severa: dólar sube 400% (1981)","Reunión con dirigentes políticos del Multipartidario (1981)","Desplazado por Galtieri tras solo 9 meses (dic. 1981)","Convocatoria fallida al diálogo social (1981)"],
+   indicadores:{inflacion:"104%",pbi:"Caída -6%",desempleo:"Creciente",pobreza:"Alta",deuda:"Crisis",conflicto:"Interna militar","balance":"Déficit"}},
+
+  {id:24,nombre:"Leopoldo Galtieri",periodo:"1981–1982",inicio:1981,fin:1982,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Junta Militar",
+   wiki:"Leopoldo_Fortunato_Galtieri",
+   frase:{texto:"«Las Malvinas son y serán argentinas.»",fuente:"Discurso en Malvinas, 1982"},
+   curiosidades:["Ordenó la invasión de las Islas Malvinas el 2 de abril de 1982", "La derrota en Malvinas aceleró el fin de la dictadura", "Fue condenado a 12 años de prisión por la rendición ante los británicos"],
+   bio:"Ordenó la recuperación de las Islas Malvinas el 2 de abril de 1982, desencadenando la guerra con Gran Bretaña. La derrota militar precipitó el fin de la dictadura. Fue condenado por delitos de lesa humanidad y por mal manejo de la guerra.",
+   nacimiento:1926,fallecimiento:2003,profesion:"Militar",lugarnac:"Caseros, Buenos Aires",
+   influencias:["Doctrina de Seguridad Nacional","Reagan Administration"],
+   hitos:["Invasión y recuperación de las Islas Malvinas (2 abr. 1982)","Desembarco británico en San Carlos: inicio del contraataque (21 may. 1982)","Hundimiento del Crucero General Belgrano (2 may. 1982)","Rendición argentina en Puerto Argentino (14 jun. 1982)","Renuncia forzada tras la derrota en Malvinas (1982)","Protestas masivas en Plaza de Mayo: fin del apoyo popular (1982)"],
+   indicadores:{inflacion:"165%",pbi:"Caída -3%",desempleo:"Alto",pobreza:"Alta",deuda:"Insostenible",conflicto:"Guerra de Malvinas","balance":"Déficit"}},
+
+  {id:25,nombre:"Reynaldo Bignone",periodo:"1982–1983",inicio:1982,fin:1983,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Junta Militar",
+   wiki:"Reynaldo_Bignone",
+   frase:{texto:"«Mi tarea es dejar al pueblo en libertad de elegir.»",fuente:"Discurso de transición, 1983"},
+   curiosidades:["Último presidente de facto de la historia argentina", "Dictó la Ley de Autoamnistía que Alfonsín luego anuló", "Fue condenado a prisión perpetua por delitos de lesa humanidad"],
+   bio:"Último presidente de facto. Su tarea fue conducir la transición a la democracia tras la derrota en Malvinas. Dictó la Ley de Autoamnistía, luego anulada. Fue condenado a prisión perpetua por delitos de lesa humanidad.",
+   nacimiento:1928,fallecimiento:2018,profesion:"Militar",lugarnac:"Morón, Buenos Aires",
+   influencias:["Doctrina de Seguridad Nacional"],
+   hitos:["Ley de Autoamnistía para proteger a militares (1983)","Convocatoria a elecciones presidenciales (1983)","Triunfo de Alfonsín sobre Luder: fin de la dictadura (oct. 1983)","Anulación de la Ley de Autoamnistía por Alfonsín (dic. 1983)","Destrucción de archivos de la SIDE sobre desaparecidos (1983)","Condenado a prisión perpetua por lesa humanidad (2010)"],
+   indicadores:{inflacion:"230%",pbi:"Caída severa",desempleo:"Alto",pobreza:"Alta",deuda:"Crisis total",conflicto:"Post-Malvinas","balance":"Déficit crítico"}},
+
+  {id:26,nombre:"Raúl Alfonsín",periodo:"1983–1989",inicio:1983,fin:1989,tipo:"electo",origen:"Interior",era:"democracia",partido:"UCR",partidoLabel:"UCR",
+   wiki:"Raúl_Alfonsín",
+   frase:{texto:"«Con la democracia se come, se cura y se educa.»",fuente:"Campaña electoral, 1983"},
+   curiosidades:["El Juicio a las Juntas de 1985 fue pionero mundial", "'Con la democracia se come' es la frase más recordada del retorno democrático", "Entregó el poder 6 meses antes por la hiperinflación de 1989"],
+   bio:"Primer presidente democrático tras la dictadura. Su gran legado fue el Juicio a las Juntas (1985), pionero en el mundo en juzgar crímenes de lesa humanidad. Lanzó el Plan Austral y luego el Plan Primavera para frenar la hiperinflación. Entregó anticipadamente el poder ante la crisis económica de 1989.",
+   nacimiento:1927,fallecimiento:2009,profesion:"Abogado, político",lugarnac:"Chascomús",
+   influencias:["Liberalismo republicano","Socialismo democrático","Kant"],
+   hitos:["CONADEP: Informe 'Nunca Más' sobre desaparecidos (1984)","Juicio a las Juntas Militares: condenas históricas (1985)","Plan Austral: nueva moneda para combatir inflación (1985)","Levantamientos carapintadas: rebeliones militares (1987)","Hiperinflación: precios suben 3.000% en 1989","Entrega anticipada del poder a Menem (jul. 1989)"],
+   indicadores:{inflacion:"3.000% en 1989",pbi:"Variable",desempleo:"Moderado-alto",pobreza:"50%+ en crisis",deuda:"Pesada herencia",conflicto:"Carapintadas","balance":"Déficit crónico"}},
+
+  {id:27,nombre:"Carlos Menem",periodo:"1989–1999",inicio:1989,fin:1999,tipo:"electo",origen:"Interior",era:"democracia",partido:"PJ",partidoLabel:"PJ menemista",
+   wiki:"Carlos_Menem",
+   frase:{texto:"«Síganme, no los voy a defraudar.»",fuente:"Campaña electoral, 1989"},
+   curiosidades:["Primer presidente en lograr la reelección inmediata tras la reforma de 1994", "Indultó a los militares y guerrilleros condenados por la dictadura", "Llevaba peluca: un secreto que todos conocían pero nadie mencionaba"],
+   bio:"Diez años de gobierno marcados por la Convertibilidad (1 peso = 1 dólar), las privatizaciones masivas (Aerolíneas, YPF, teléfonos) y la desregulación extrema. La estabilidad de los 90 escondía una bomba de tiempo. Los atentados a la Embajada de Israel y la AMIA marcan su gobierno. Fue procesado por varios casos de corrupción.",
+   nacimiento:1930,fallecimiento:2021,profesion:"Abogado, político",lugarnac:"Anillaco, La Rioja",
+   influencias:["Neoliberalismo","FMI","Washington Consensus"],
+   hitos:["Indulto a militares de la dictadura y guerrilleros (1989–1990)","Plan de Convertibilidad: 1 peso = 1 dólar (1991)","Privatización de Aerolíneas, YPF, teléfonos y ferrocarriles (1990–1994)","Atentado a la Embajada de Israel: 29 muertos (1992)","Atentado a la AMIA: 85 muertos, el peor atentado de América Latina (1994)","Reforma Constitucional: habilita reelección (1994)"],
+   indicadores:{inflacion:"3% promedio (convertibilidad)",pbi:"Crecimiento 1991-98",desempleo:"18% pico",pobreza:"Creciente (oculta)",deuda:"Duplicó deuda externa",conflicto:"Atentados AMIA/Embajada","balance":"Déficit fiscal estructural"}},
+
+  {id:28,nombre:"Fernando De la Rúa",periodo:"1999–2001",inicio:1999,fin:2001,tipo:"electo",origen:"Interior",era:"democracia",partido:"UCR",partidoLabel:"Alianza UCR-Frepaso",
+   wiki:"Fernando_de_la_Rúa",
+   frase:{texto:"«Seré un presidente aburrido.»",fuente:"Campaña electoral, 1999"},
+   curiosidades:["Renunció huyendo en helicóptero de la Casa Rosada el 20 de diciembre de 2001", "En solo 2 años hubo 5 presidentes diferentes en Argentina", "Su gobierno es recordado como el del '¡Que se vayan todos!'"],
+   bio:"Asumió con la Convertibilidad heredada de Menem. El país se hundió en recesión. El 'corralito' bancario de diciembre 2001 desató la mayor crisis social de Argentina. Renunció el 20 de diciembre de 2001 en helicóptero desde la Casa Rosada con 39 muertos en las calles.",
+   nacimiento:1937,fallecimiento:2019,profesion:"Abogado, político",lugarnac:"Río Cuarto, Córdoba",
+   influencias:["Liberalismo moderado","Convertibilidad Menem"],
+   hitos:["Escándalo por sobornos en el Senado (2000)","Renuncia del vicepresidente Chacho Álvarez (2000)","Implementación del 'corralito': congelamiento de depósitos (dic. 2001)","Crisis del 19–20 de diciembre: 39 muertos en las calles (2001)","Renuncia desde la Casa Rosada en helicóptero (20 dic. 2001)","Comienzo de la sucesión de 5 presidentes en 10 días (2001)"],
+   indicadores:{inflacion:"Deflación",pbi:"Caída -4.4%",desempleo:"18.3%",pobreza:"35%",deuda:"Default más grande hasta entonces",conflicto:"Crisis social masiva","balance":"Déficit/ajuste"}},
+
+  {id:29,nombre:"Eduardo Duhalde",periodo:"2002–2003",inicio:2002,fin:2003,tipo:"interino",origen:"Buenos Aires",era:"democracia",partido:"PJ",partidoLabel:"PJ",
+   wiki:"Eduardo_Duhalde",
+   frase:{texto:"«Hay que transformar el hambre en trabajo.»",fuente:"Discurso presidencial, 2002"},
+   curiosidades:["Fue elegido por la Asamblea Legislativa, no por el voto popular", "Devaluó el peso y puso fin a la convertibilidad 1 a 1 con el dólar", "La represión de Avellaneda (Kosteki y Santillán) precipitó su salida anticipada"],
+   bio:"Elegido por la Asamblea Legislativa tras la crisis del 2001. Declaró el default de la deuda y devaluó el peso, rompiendo la Convertibilidad. La represión de Avellaneda en 2002 (muerte de Kosteki y Santillán) precipitó el llamado anticipado a elecciones.",
+   nacimiento:1941,fallecimiento:null,profesion:"Abogado, político",lugarnac:"Lomas de Zamora",
+   influencias:["Peronismo bonaerense"],
+   hitos:["Devaluación del peso: fin de la Convertibilidad (2002)","Pesificación de deudas y depósitos bancarios (2002)","Asesinato de Kosteki y Santillán en el Puente Pueyrredón (2002)","Convocatoria anticipada a elecciones (2002)","Triunfo de Néstor Kirchner en el ballottage (2003)","Plan Jefes y Jefas de Hogar: primer programa masivo de asistencia (2002)"],
+   indicadores:{inflacion:"41%",pbi:"-10.9% (2002)",desempleo:"21.5%",pobreza:"57.5%",deuda:"Default",conflicto:"Represión Avellaneda","balance":"Déficit"}},
+
+  {id:30,nombre:"Néstor Kirchner",periodo:"2003–2007",inicio:2003,fin:2007,tipo:"electo",origen:"Interior",era:"democracia",partido:"PJ",partidoLabel:"FPV / Kirchnerismo",
+   wiki:"Néstor_Kirchner",
+   frase:{texto:"«La política es el instrumento más noble para transformar la realidad.»",fuente:"Discurso de asunción, 2003"},
+   curiosidades:["Llegó a la presidencia con solo el 22% de los votos tras el ballottage", "Fue el primer presidente de la provincia de Santa Cruz", "Murió de un infarto en 2010, a los 60 años, aún en plena actividad política"],
+   bio:"Llegó con el 22% de los votos tras la renuncia de Menem al ballottage. Reconstruyó el Estado, anuló las leyes de amnistía a los militares, relanzó los juicios por DDHH y negoció la quita del 65% de la deuda externa. La bonanza de los commodities y el crecimiento del PBI del 8-9% anual marcaron su gestión.",
+   nacimiento:1950,fallecimiento:2010,profesion:"Abogado, político",lugarnac:"Río Gallegos, Santa Cruz",
+   influencias:["Peronismo setentista","Socialismo latinoamericano","Nac&Pop"],
+   hitos:["Baja del cuadro de Videla en el Colegio Militar (2004)","Nulidad de las Leyes de Obediencia Debida y Punto Final (2003)","Reestructuración de la deuda con quita del 65% (2005)","Pago al FMI: cancelación total de la deuda (2006)","PBI creció al 9% anual durante todo el mandato (2003–2007)","Creación de UNASUR y alianza con Chávez y Lula (2004)"],
+   indicadores:{inflacion:"10% promedio",pbi:"9% anual promedio",desempleo:"Bajó de 21% a 8%",pobreza:"Cayó 50%",deuda:"Renegociación histórica",conflicto:"Bajo","balance":"Superávit gemelos"}},
+
+  {id:31,nombre:"Cristina Fernández de Kirchner",periodo:"2007–2015",inicio:2007,fin:2015,tipo:"electo",origen:"Interior",era:"democracia",partido:"PJ",partidoLabel:"FPV / Kirchnerismo",
+   wiki:"Cristina_Fernández_de_Kirchner",
+   frase:{texto:"«La militancia no se vende, no se rinde.»",fuente:"Discurso en La Plata, 2012"},
+   curiosidades:["Primera presidenta electa de Argentina", "Su gobierno estatizó YPF en 2012, revirtiendo la privatización de Menem", "Sufrió un atentado en septiembre de 2022 del que salió ilesa"],
+   bio:"Primera presidenta electa de Argentina. Dos mandatos marcados por la expansión del Estado, la Asignación Universal por Hijo, la estatización de YPF, el conflicto con el campo (2008) y la muerte de Nisman. En su segundo mandato la economía se deterioró con cepo cambiario e inflación creciente.",
+   nacimiento:1953,fallecimiento:null,profesion:"Abogada, política",lugarnac:"La Plata",
+   influencias:["Kirchnerismo","Peronismo izquierdista"],
+   hitos:["Conflicto con el campo: paro agropecuario (2008)","Asignación Universal por Hijo: protección social masiva (2009)","Matrimonio Igualitario: Argentina 1° de Latinoamérica (2010)","Estatización de YPF: reversión de la privatización (2012)","Muerte del fiscal Nisman: escándalo político mayor (2015)","Cepo cambiario: restricciones al dólar (2011–2015)"],
+   indicadores:{inflacion:"30%+ (real, manipulada por INDEC)",pbi:"Variable",desempleo:"7-8%",pobreza:"25-30% (con debate estadístico)",deuda:"Default holdouts",conflicto:"Conflicto campo","balance":"Deterioro progresivo"}},
+
+  {id:32,nombre:"Mauricio Macri",periodo:"2015–2019",inicio:2015,fin:2019,tipo:"electo",origen:"Buenos Aires",era:"democracia",partido:"Cambiemos",partidoLabel:"Cambiemos",
+   wiki:"Mauricio_Macri",
+   frase:{texto:"«Pobreza cero.»",fuente:"Promesa de campaña, 2015"},
+   curiosidades:["Primer presidente no peronista ni radical en ganar desde 1916", "Tomó el préstamo del FMI más grande de la historia: USD 57.000 millones", "Antes de la política fue presidente del Club Atlético Boca Juniors"],
+   bio:"Primer presidente no peronista ni radical en ganar elecciones en décadas. Levantó el cepo cambiario, acordó con los holdouts y tomó el mayor préstamo del FMI de la historia (USD 57.000 millones). La inflación y el endeudamiento acelerado llevaron al país a nueva crisis. Perdió las PASO 2019 y terminó el mandato en recesión.",
+   nacimiento:1959,fallecimiento:null,profesion:"Empresario, político",lugarnac:"Buenos Aires",
+   influencias:["Neoliberalismo","Gerencialismo político","FMI"],
+   hitos:["Eliminación del cepo cambiario: devaluación del peso (dic. 2015)","Acuerdo con holdouts: fin del default (2016)","Tarifazos: suba masiva de servicios públicos (2016–2019)","Préstamo del FMI: USD 57.000 millones, récord mundial (2018)","Devaluación: el peso pierde 50% de su valor (2018)","Derrota en las PASO 2019: Fernández le gana por 16 puntos"],
+   indicadores:{inflacion:"53% en 2019",pbi:"Caída -2.6% en 2019",desempleo:"9.8%",pobreza:"35.5%",deuda:"USD 57.000M FMI (récord)",conflicto:"Baja conflictividad social","balance":"Déficit/ajuste"}},
+
+  {id:33,nombre:"Alberto Fernández",periodo:"2019–2023",inicio:2019,fin:2023,tipo:"electo",origen:"Buenos Aires",era:"democracia",partido:"PJ",partidoLabel:"Frente de Todos",
+   wiki:"Alberto_Fernández",
+   frase:{texto:"«Nadie se salva solo.»",fuente:"Discurso de asunción, 2019"},
+   curiosidades:["Su gobierno coincidió con la cuarentena más larga del mundo por COVID", "La inflación llegó al 211% en 2023, la más alta desde la hiperinflación", "El 'Olivosgate' (fiesta en cuarentena) marcó negativamente su imagen"],
+   bio:"Asumió con la pesada herencia de la deuda con el FMI. La pandemia del COVID-19 (una de las cuarentenas más largas del mundo) devastó la economía. Renegoció la deuda con el FMI y el Club de París. Su gobierno terminó con inflación de 211%, pobreza creciente y el escándalo del 'Olivosgate'. No buscó la reelección.",
+   nacimiento:1959,fallecimiento:null,profesion:"Abogado, docente, político",lugarnac:"Buenos Aires",
+   influencias:["Kirchnerismo moderado","Centro-izquierda"],
+   hitos:["Cuarentena total por COVID-19: una de las más largas del mundo (2020)","Renegociación deuda con el FMI: acuerdo de refinanciación (2022)","Olivosgate: fiesta en Quinta de Olivos en cuarentena (2021)","Renuncia de Guzmán: crisis de gabinete por interna kirchnerista (2022)","Inflación llega al 211% en 2023: la más alta desde 1990","Derrota ante Milei en el ballottage: fin del kirchnerismo en el Ejecutivo (2023)"],
+   indicadores:{inflacion:"211% (2023)",pbi:"-10% en 2020, recuperación",desempleo:"6.9%",pobreza:"40.1%",deuda:"Renegociación FMI",conflicto:"Pandemia + interna kirchnerista","balance":"Déficit persistente"}},
+
+  {id:34,nombre:"Javier Milei",periodo:"2023–presente",inicio:2023,fin:2027,tipo:"electo",origen:"Buenos Aires",era:"democracia",partido:"LLA",partidoLabel:"La Libertad Avanza",
+   wiki:"Javier_Milei",
+   frase:{texto:"«¡Viva la libertad, carajo!»",fuente:"Frase icónica de campaña, 2023"},
+   curiosidades:["Primer presidente libertario de la historia argentina", "Tiene cinco perros clonados de su mascota Conan, todos con nombres de economistas", "Logró el primer superávit fiscal en más de una década"],
+   live:true,
+   bio:"Economista libertario y locutor radial que llegó a la presidencia en un contexto de hartazgo social y crisis económica. Propuso la 'motosierra' contra el gasto público y la dolarización. Su gobierno logró superávit fiscal histórico y redujo la inflación de 211% a ~66% en 2024. La pobreza subió al 53% en el primer semestre de 2024 pero bajó al 32% en 2025. Obtuvo buenos resultados en las elecciones de medio término 2025.",
+   nacimiento:1970,fallecimiento:null,profesion:"Economista, docente, político",lugarnac:"Palermo, Buenos Aires",
+   influencias:["Hayek","Mises","Murray Rothbard","Milton Friedman","Escuela Austríaca"],
+   hitos:["Shock de ajuste fiscal: la 'motosierra' contra el gasto público (dic. 2023)","Superávit fiscal: el primero en más de una década (2024)","Inflación cae de 25% mensual a ~2% mensual (2024–2025)","Pobreza sube al 53% (1S2024) luego baja al 32% (1S2025)","Elecciones de medio término: buen resultado de LLA (2025)","Acuerdo con el FMI: nuevo programa de USD 20.000 millones (2025)"],
+   indicadores:{
+     inflacion:"~66% acumulada 2024 / ~31% proyectado 2025",
+     pbi:"Caída ~3% en 2024, crecimiento 5% proyectado 2025",
+     desempleo:"6.4%",
+     pobreza:"32% (1S2025, mínimo desde 2018)",
+     deuda:"Acuerdo FMI vigente",
+     conflicto:"Protesta social universitaria / jubilados",
+     balance:"Superávit fiscal histórico"
+   },
+   liveData:{
+     inflacionMensual:"~2.1% (mar 2026)",
+     reservas:"En recuperación",
+     riesgoPais:"~700 puntos básicos",
+     superavit:"Superávit fiscal",
+     fuente:"INDEC / Infobae / Chequeado"
+   }
+  },
+
+  {id:35,nombre:"Manuel Quintana",periodo:"1904–1906",inicio:1904,fin:1906,tipo:"electo",origen:"Buenos Aires",era:"turn",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Manuel_Quintana",
+   frase:{texto:"«El orden es la base de la prosperidad nacional.»",fuente:"Discurso presidencial, 1904"},
+   curiosidades:["Murió en ejercicio en 1906, uno de los pocos presidentes fallecidos en el cargo","Era abogado y uno de los juristas más prestigiosos de su época","Su muerte abrió paso a Figueroa Alcorta, quien rompió con el roquismo"],
+   bio:"Abogado y político conservador elegido para suceder a Roca. Su mandato estuvo marcado por las tensiones con el radicalismo y una intentona revolucionaria en 1905. Murió en ejercicio en marzo de 1906.",
+   nacimiento:1835,fallecimiento:1906,profesion:"Abogado, político",lugarnac:"Buenos Aires",
+   influencias:["Conservadurismo liberal","Positivismo"],
+   hitos:["Revolución radical de 1905: levantamiento reprimido (1905)","Muerte en ejercicio a los 70 años (1906)","Consolidación institucional del PAN (1904–1906)","Continuidad de la política agroexportadora roquista (1904)","Asunción de Figueroa Alcorta como vicepresidente (1906)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento agroexportador",desempleo:"Bajo",pobreza:"Moderada",deuda:"Estable",conflicto:"Revolución radical 1905",balance:"Superávit"}},
+
+  {id:36,nombre:"José Figueroa Alcorta",periodo:"1906–1910",inicio:1906,fin:1910,tipo:"electo",origen:"Interior",era:"turn",partido:"conservador",partidoLabel:"PAN disidente",
+   wiki:"José_Figueroa_Alcorta",
+   frase:{texto:"«Gobernar es también saber cuándo ceder ante la historia.»",fuente:"Discurso en el Congreso, 1908"},
+   curiosidades:["Clausuró el Congreso Nacional en 1908 en un acto muy controvertido","Era cordobés de origen humilde; estudió derecho con grandes sacrificios","Inauguró el Palacio del Congreso de la Nación en 1906"],
+   bio:"Vicepresidente que asumió tras la muerte de Quintana. Cordobés de origen humilde, se alejó del roquismo y clausuró el Congreso en 1908 ante el bloqueo parlamentario. Inauguró el Palacio del Congreso y entregó el poder a Roque Sáenz Peña.",
+   nacimiento:1860,fallecimiento:1931,profesion:"Abogado, político",lugarnac:"Córdoba",
+   influencias:["Conservadurismo reformista","Autonomismo cordobés"],
+   hitos:["Inauguración del Palacio del Congreso de la Nación (1906)","Clausura del Congreso ante bloqueo parlamentario (1908)","Celebración del Centenario de Mayo (preparativos, 1910)","Ruptura con el roquismo y autonomía política (1907)","Entrega del poder a Roque Sáenz Peña (1910)"],
+   indicadores:{inflacion:"Baja",pbi:"Crecimiento",desempleo:"Bajo",pobreza:"Moderada",deuda:"Estable",conflicto:"Crisis parlamentaria 1908",balance:"Superávit"}},
+
+  {id:37,nombre:"Victorino de la Plaza",periodo:"1914–1916",inicio:1914,fin:1916,tipo:"electo",origen:"Interior",era:"turn",partido:"conservador",partidoLabel:"PAN",
+   wiki:"Victorino_de_la_Plaza",
+   frase:{texto:"«La neutralidad es la prudencia de los pueblos sabios.»",fuente:"Discurso sobre la Gran Guerra, 1914"},
+   curiosidades:["Mantuvo la neutralidad argentina durante la Primera Guerra Mundial","Era salteño, uno de los pocos presidentes del norte del país","Fue el último presidente del viejo orden oligárquico antes del triunfo radical"],
+   bio:"Vicepresidente que asumió tras la muerte de Roque Sáenz Peña en 1914. Mantuvo la neutralidad argentina en la Primera Guerra Mundial. Bajo su gobierno se aplicó por primera vez la Ley Sáenz Peña: Yrigoyen ganó las elecciones de 1916.",
+   nacimiento:1840,fallecimiento:1919,profesion:"Abogado, diplomático",lugarnac:"Salta",
+   influencias:["Conservadurismo","Pragmatismo diplomático"],
+   hitos:["Neutralidad argentina ante la Primera Guerra Mundial (1914)","Primeras elecciones con Ley Sáenz Peña: voto secreto (1916)","Triunfo de Yrigoyen: fin del dominio del PAN (1916)","Asunción por muerte de Roque Sáenz Peña (1914)","Impacto económico de la guerra en exportaciones (1914–1916)"],
+   indicadores:{inflacion:"Moderada (impacto WWI)",pbi:"Afectado por la guerra",desempleo:"Moderado",pobreza:"Alta",deuda:"Estable",conflicto:"Bajo interno / WWI",balance:"Equilibrado"}},
+
+  {id:38,nombre:"Arturo Rawson",periodo:"1943",inicio:1943,fin:1943,tipo:"facto",origen:"Interior",era:"dictaduras",partido:"militar",partidoLabel:"GOU Militar",
+   wiki:"Arturo_Rawson",
+   frase:{texto:"«El ejército asume la responsabilidad del orden nacional.»",fuente:"Proclama del golpe, junio 1943"},
+   curiosidades:["Gobernó solo 3 días: el mandato más corto de la historia argentina","Lideró el golpe del 4 de junio de 1943 contra Castillo","Fue desplazado casi de inmediato por sus propios camaradas del GOU"],
+   bio:"General que encabezó el golpe del 4 de junio de 1943 contra Ramón Castillo. Gobernó apenas tres días antes de ser desplazado por sus camaradas del GOU, que lo consideraron demasiado pro-aliado. Es el presidente con el mandato más corto de la historia argentina.",
+   nacimiento:1884,fallecimiento:1952,profesion:"Militar",lugarnac:"San Juan",
+   influencias:["Nacionalismo militar"],
+   hitos:["Lideró el golpe del 4 de junio de 1943 contra Castillo","Gobernó solo 3 días: el mandato más corto de la historia","Desplazado por sus camaradas del GOU por ser 'pro-aliado'","Disolución del Congreso Nacional (jun. 1943)","Ramírez lo reemplaza casi de inmediato (jun. 1943)"],
+   indicadores:{inflacion:"N/D",pbi:"N/D",desempleo:"N/D",pobreza:"N/D",deuda:"N/D",conflicto:"Golpe de Estado",balance:"N/D"}},
+
+  {id:39,nombre:"Pedro Pablo Ramírez",periodo:"1943–1944",inicio:1943,fin:1944,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"GOU Militar",
+   wiki:"Pedro_Pablo_Ramírez",
+   frase:{texto:"«El orden militar es el orden de la Nación.»",fuente:"Proclama presidencial, 1943"},
+   curiosidades:["Rompió relaciones con el Eje bajo presión de EE.UU. en 1944, lo que le costó el poder","Fue presidente durante el ascenso de Perón como figura política clave","Fue desplazado por Farrell tras ceder a las presiones aliadas"],
+   bio:"General que reemplazó a Rawson en 1943. Bajo presión de Estados Unidos, rompió relaciones con las potencias del Eje en 1944, lo que le costó el poder: sus propios camaradas lo desplazaron en favor de Farrell. Durante su gobierno, Perón consolidó su influencia como Secretario de Trabajo.",
+   nacimiento:1884,fallecimiento:1962,profesion:"Militar",lugarnac:"Buenos Aires",
+   influencias:["Nacionalismo militar","Neutralismo"],
+   hitos:["Nombramiento de Perón como Secretario de Trabajo (1943)","Intervención de la Universidad: fin de la autonomía universitaria (1943)","Ruptura de relaciones diplomáticas con el Eje bajo presión de EE.UU. (1944)","Desplazado por Farrell tras ceder a presiones aliadas (feb. 1944)","Persecución de comunistas y socialistas (1943)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento industrial",desempleo:"Bajo",pobreza:"Moderada",deuda:"Estable",conflicto:"Tensiones internas militares",balance:"Equilibrado"}},
+
+  {id:40,nombre:"Eduardo Lonardi",periodo:"1955",inicio:1955,fin:1955,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Revolución Libertadora",
+   wiki:"Eduardo_Lonardi",
+   frase:{texto:"«Ni vencedores ni vencidos.»",fuente:"Discurso de asunción, septiembre 1955"},
+   curiosidades:["Gobernó solo 51 días antes de ser desplazado por Aramburu","Su frase 'Ni vencedores ni vencidos' buscaba reconciliación, pero sus camaradas la rechazaron","Era católico-nacionalista, lo que lo diferenció del liberalismo duro de Aramburu"],
+   bio:"General católico-nacionalista que lideró la Revolución Libertadora que derrocó a Perón en septiembre de 1955. Su lema 'Ni vencedores ni vencidos' buscaba una transición pacífica, pero los sectores más antiperonistas del ejército lo desplazaron en noviembre de 1955.",
+   nacimiento:1896,fallecimiento:1956,profesion:"Militar",lugarnac:"Buenos Aires",
+   influencias:["Catolicismo nacionalista","Antiperonismo moderado"],
+   hitos:["Revolución Libertadora: derrocamiento de Perón (16 sept. 1955)","Frase histórica 'Ni vencedores ni vencidos' (sept. 1955)","Disolución del Congreso Nacional (sept. 1955)","Desplazado por Aramburu a los 51 días (nov. 1955)","Muere poco después del golpe interno, en 1956"],
+   indicadores:{inflacion:"Alta",pbi:"Inestable",desempleo:"Moderado",pobreza:"Alta",deuda:"Pesada herencia",conflicto:"Revolución y transición",balance:"Déficit"}},
+
+  {id:41,nombre:"Pedro Eugenio Aramburu",periodo:"1955–1958",inicio:1955,fin:1958,tipo:"facto",origen:"Interior",era:"dictaduras",partido:"militar",partidoLabel:"Revolución Libertadora",
+   wiki:"Pedro_Eugenio_Aramburu",
+   frase:{texto:"«El peronismo es incompatible con la democracia.»",fuente:"Declaración pública, 1956"},
+   curiosidades:["Fue secuestrado y asesinado por Montoneros en 1970, el primer gran atentado guerrillero","Fusiló a 27 civiles y militares en los levantamientos de junio de 1956","Robó y ocultó el cadáver de Evita para impedir que se convirtiera en símbolo"],
+   bio:"Reemplazó a Lonardi y gobernó con mano dura: prohibió el peronismo, fusiló a los sublevados de junio de 1956 y ocultó el cadáver de Evita. Convocó a elecciones en 1958 ganadas por Frondizi. En 1970 fue secuestrado y asesinado por los Montoneros.",
+   nacimiento:1903,fallecimiento:1970,profesion:"Militar",lugarnac:"Río Cuarto, Córdoba",
+   influencias:["Liberalismo antiperonista","Doctrina militar clásica"],
+   hitos:["Robo y ocultamiento del cadáver de Eva Perón (1955)","Fusilamientos de civiles y militares sublevados (jun. 1956)","Decreto 4161: prohibición del peronismo y sus símbolos (1956)","Convocatoria a elecciones: Frondizi gana (1958)","Secuestro y asesinato por Montoneros (1970)","Devolución del cadáver de Evita a Perón (negoció en 1971)"],
+   indicadores:{inflacion:"Alta",pbi:"Recuperación gradual",desempleo:"Moderado",pobreza:"Alta",deuda:"Renegociación",conflicto:"Represión antiperonista",balance:"Déficit"}},
+
+  {id:42,nombre:"Arturo Frondizi",periodo:"1958–1962",inicio:1958,fin:1962,tipo:"electo",origen:"Interior",era:"dictaduras",partido:"UCR",partidoLabel:"UCRI",
+   wiki:"Arturo_Frondizi",
+   frase:{texto:"«El desarrollo industrial es el único camino hacia la independencia nacional.»",fuente:"Discurso presidencial, 1958"},
+   curiosidades:["Se reunió secretamente con el Che Guevara en 1961, escándalo que indignó a los militares","Fue derrocado tras permitir que el peronismo ganara las elecciones de 1962","Impulsó la explotación petrolera con el lema 'petróleo o dependencia'"],
+   bio:"Radical intransigente que llegó al poder con votos peronistas. Su política desarrollista impulsó la industria y el petróleo. Los militares lo derrocaron en 1962 tras permitir el triunfo peronista en elecciones provinciales. Fue detenido en la isla Martín García.",
+   nacimiento:1908,fallecimiento:1995,profesion:"Abogado, político",lugarnac:"Paso de los Libres, Corrientes",
+   influencias:["Desarrollismo","Nacionalismo económico","Keynesianismo"],
+   hitos:["Contratos petroleros con empresas extranjeras: 'battle for oil' (1958)","Reunión secreta con el Che Guevara en Olivos (1961)","Privatización parcial de universidades: 'laica o libre' (1958)","Triunfo peronista en elecciones provinciales de Buenos Aires (1962)","Golpe militar: depuesto y detenido en isla Martín García (1962)","Política desarrollista: industria automotriz y siderúrgica (1959–1962)"],
+   indicadores:{inflacion:"Alta",pbi:"Crecimiento industrial",desempleo:"Moderado",pobreza:"Alta",deuda:"Creciente",conflicto:"Presión militar constante",balance:"Déficit"}},
+
+  {id:43,nombre:"José María Guido",periodo:"1962–1963",inicio:1962,fin:1963,tipo:"interino",origen:"Buenos Aires",era:"dictaduras",partido:"UCR",partidoLabel:"Gobierno civil tutelado",
+   wiki:"José_María_Guido",
+   frase:{texto:"«Gobierno las formas; el poder, lamentablemente, lo tienen otros.»",fuente:"Frase atribuida, 1962"},
+   curiosidades:["Fue presidente por mandato constitucional pero gobernó bajo tutela militar total","Durante su mandato hubo guerra interna entre 'azules' y 'colorados' dentro del ejército","Anuló las elecciones que había ganado el peronismo, desencadenando la crisis"],
+   bio:"Presidente del Senado que asumió tras el golpe contra Frondizi, manteniendo la fachada constitucional. Gobernó bajo tutela de los militares, divididos entre 'azules' (legalistas) y 'colorados' (antiperonistas duros). Convocó a elecciones en 1963 ganadas por Illia.",
+   nacimiento:1910,fallecimiento:1975,profesion:"Abogado, político",lugarnac:"Buenos Aires",
+   influencias:["Radicalismo","Constitucionalismo formal"],
+   hitos:["Asumió para evitar un golpe militar directo (1962)","Anulación de las elecciones ganadas por el peronismo (1962)","Batalla entre 'azules' y 'colorados': crisis interna militar (1962)","Tanques en la calle: enfrentamientos en Buenos Aires (1962)","Convocatoria a elecciones: Illia gana con el 25% (1963)"],
+   indicadores:{inflacion:"Alta",pbi:"Estancado",desempleo:"Alto",pobreza:"Alta",deuda:"Creciente",conflicto:"Lucha interna militar",balance:"Déficit"}},
+
+  {id:44,nombre:"Arturo Umberto Illia",periodo:"1963–1966",inicio:1963,fin:1966,tipo:"electo",origen:"Interior",era:"dictaduras",partido:"UCR",partidoLabel:"UCRP",
+   wiki:"Arturo_Illia",
+   frase:{texto:"«Gobernar es servir, no mandar.»",fuente:"Discurso de asunción, 1963"},
+   curiosidades:["Era médico rural y vivía con extrema sencillez; no tenía auto propio","La prensa lo apodó 'la tortuga' por su estilo pausado, pero la economía creció un 8% anual","Anuló los contratos petroleros de Frondizi recuperando la soberanía energética"],
+   bio:"Médico radical elegido con solo el 25% de los votos. Su gobierno fue uno de los más austeros y honestos de la historia. Anuló los contratos petroleros y sancionó la Ley de Medicamentos. Fue derrocado por Onganía en 1966 pese al crecimiento económico del 8% anual.",
+   nacimiento:1900,fallecimiento:1983,profesion:"Médico, político",lugarnac:"Pergamino, Buenos Aires",
+   influencias:["Radicalismo humanista","Medicina social"],
+   hitos:["Anulación de contratos petroleros con empresas extranjeras (1963)","Sanción de la Ley de Medicamentos: medicamentos genéricos (1964)","PBI creció al 8% anual durante todo el mandato (1963–1966)","Salario mínimo vital y móvil por decreto (1964)","Derrocado por Onganía pese a la bonanza económica (1966)","Argentina vota en ONU contra intervención de EE.UU. en Vietnam (1965)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento 8%",desempleo:"Bajo",pobreza:"Moderada",deuda:"Controlada",conflicto:"Presión militar y sindical",balance:"Superávit"}},
+
+  {id:45,nombre:"Juan Carlos Onganía",periodo:"1966–1970",inicio:1966,fin:1970,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Revolución Argentina",
+   wiki:"Juan_Carlos_Onganía",
+   frase:{texto:"«El tiempo económico precede al tiempo político.»",fuente:"Discurso de gobierno, 1966"},
+   curiosidades:["Prohibió los partidos políticos y disolvió el Congreso indefinidamente","La 'Noche de los Bastones Largos' (1966) reprimió universidades y expulsó a científicos","El Cordobazo de 1969 marcó el inicio de su caída"],
+   bio:"General que lideró la 'Revolución Argentina' derrocando a Illia. Disolvió el Congreso, prohibió los partidos y reprimió las universidades ('Noche de los Bastones Largos'). El Cordobazo de mayo de 1969 lo debilitó gravemente. Fue desplazado por sus propios camaradas en 1970.",
+   nacimiento:1914,fallecimiento:1994,profesion:"Militar",lugarnac:"Mercedes, Buenos Aires",
+   influencias:["Catolicismo integrista","Doctrina de Seguridad Nacional"],
+   hitos:["Golpe contra Illia: inicio de la 'Revolución Argentina' (1966)","Noche de los Bastones Largos: represión universitaria (29 jul. 1966)","Disolución del Congreso y prohibición de partidos (1966)","Cordobazo: rebelión obrero-estudiantil en Córdoba (29 may. 1969)","Secuestro del ex presidente Aramburu por Montoneros (1970)","Desplazado por sus camaradas militares (1970)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento inicial",desempleo:"Bajo",pobreza:"Moderada",deuda:"Creciente",conflicto:"Cordobazo / represión",balance:"Déficit"}},
+
+  {id:46,nombre:"Roberto Marcelo Levingston",periodo:"1970–1971",inicio:1970,fin:1971,tipo:"facto",origen:"Interior",era:"dictaduras",partido:"militar",partidoLabel:"Revolución Argentina",
+   wiki:"Roberto_Marcelo_Levingston",
+   frase:{texto:"«Necesitamos un nuevo proyecto nacional y popular.»",fuente:"Discurso presidencial, 1970"},
+   curiosidades:["Era prácticamente desconocido cuando la Junta Militar lo eligió","El Viborazo de Córdoba (1971) precipitó su caída","Intentó un giro 'nacional y popular' que irritó a los liberales del ejército"],
+   bio:"General designado por la Junta Militar para suceder a Onganía. Intentó un perfil 'nacional y popular' que irritó a los sectores liberales del ejército. El Viborazo cordobés de 1971 precipitó su salida: fue desplazado por Lanusse.",
+   nacimiento:1920,fallecimiento:2015,profesion:"Militar",lugarnac:"San Luis",
+   influencias:["Nacionalismo militar","Desarrollismo"],
+   hitos:["Designado por la Junta sin ser conocido públicamente (1970)","Giro 'nacional y popular': tensión con liberales del ejército (1970)","Viborazo: segunda gran rebelión en Córdoba (1971)","Asesinato del ex general Aramburu por Montoneros (1970)","Desplazado por Lanusse a solo 14 meses de asumir (1971)"],
+   indicadores:{inflacion:"Alta",pbi:"Estancado",desempleo:"Moderado",pobreza:"Alta",deuda:"Creciente",conflicto:"Viborazo / guerrilla",balance:"Déficit"}},
+
+  {id:47,nombre:"Alejandro Agustín Lanusse",periodo:"1971–1973",inicio:1971,fin:1973,tipo:"facto",origen:"Buenos Aires",era:"dictaduras",partido:"militar",partidoLabel:"Revolución Argentina",
+   wiki:"Alejandro_Agustín_Lanusse",
+   frase:{texto:"«A Perón le falta coraje para volver al país.»",fuente:"Declaración pública, 1972"},
+   curiosidades:["Negoció directamente con Perón el retorno de la democracia","Fue preso político durante el primer gobierno de Perón en los años 50","Su famosa frase desafiando a Perón se convirtió en un boomerang político"],
+   bio:"Último presidente de la Revolución Argentina. Consciente de que la dictadura era insostenible, negoció con Perón el retorno democrático e impulsó el Gran Acuerdo Nacional. Convocó a elecciones para 1973. Su desafío público a Perón se volvió en su contra cuando el líder regresó triunfalmente.",
+   nacimiento:1918,fallecimiento:1996,profesion:"Militar",lugarnac:"Buenos Aires",
+   influencias:["Pragmatismo militar","Anticomunismo"],
+   hitos:["Gran Acuerdo Nacional: propuesta de transición democrática (1971)","Masacre de Trelew: fusilamiento de guerrilleros detenidos (1972)","Retorno de Perón al país tras 17 años de exilio (nov. 1972)","Negociación con Perón para habilitar su candidatura (1972)","Elecciones del 11 de marzo: Cámpora gana con 49% (1973)","Entrega del poder y fin de la 'Revolución Argentina' (1973)"],
+   indicadores:{inflacion:"Alta",pbi:"Inestable",desempleo:"Moderado",pobreza:"Alta",deuda:"Creciente",conflicto:"Guerrilla / Trelew",balance:"Déficit"}},
+
+  {id:48,nombre:"Héctor José Cámpora",periodo:"1973",inicio:1973,fin:1973,tipo:"electo",origen:"Buenos Aires",era:"democracia",partido:"PJ",partidoLabel:"FREJULI / Peronismo",
+   wiki:"Héctor_Cámpora",
+   frase:{texto:"«Cámpora al gobierno, Perón al poder.»",fuente:"Consigna de campaña, 1973"},
+   curiosidades:["Gobernó 49 días y renunció para permitir el retorno electoral de Perón","Liberó a todos los presos políticos el mismo día de su asunción","Era dentista de profesión; llegó a presidente por su lealtad incondicional a Perón"],
+   bio:"Dentista y dirigente peronista elegido presidente en marzo de 1973, cuando Perón aún no podía presentarse. Gobernó 49 días: liberó presos políticos el día de su asunción y renunció para habilitar nuevas elecciones en las que Perón ganó con el 62%.",
+   nacimiento:1909,fallecimiento:1980,profesion:"Odontólogo, político",lugarnac:"San Andrés de Giles, Buenos Aires",
+   influencias:["Peronismo de izquierda","Tendencia Revolucionaria"],
+   hitos:["Asunción el 25 de mayo de 1973: multitudinaria","Liberación de todos los presos políticos el día de la asunción (1973)","Matanza de Ezeiza: enfrentamiento entre facciones peronistas (20 jun. 1973)","Renuncia a los 49 días para habilitar candidatura de Perón (1973)","Perón gana nuevas elecciones con el 62% de los votos (1973)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento",desempleo:"Bajo",pobreza:"Moderada",deuda:"Manejada",conflicto:"Matanza de Ezeiza (20 jun 1973)",balance:"Superávit"}},
+
+  {id:49,nombre:"Raúl Alberto Lastiri",periodo:"1973",inicio:1973,fin:1973,tipo:"interino",origen:"Buenos Aires",era:"democracia",partido:"PJ",partidoLabel:"Peronismo",
+   wiki:"Raúl_Lastiri",
+   frase:{texto:"«Mi mandato es transitorio; mi lealtad a Perón, eterna.»",fuente:"Declaración pública, 1973"},
+   curiosidades:["Era yerno de José López Rega, el influyente 'brujo' de Perón","Gobernó 49 días como puente entre Cámpora y el retorno electoral de Perón","Convocó las elecciones del 23 de septiembre de 1973 que ganó Perón con el 62%"],
+   bio:"Presidente de la Cámara de Diputados que asumió tras la renuncia de Cámpora y su vice Solano Lima. Era yerno de José López Rega. Gobernó 49 días con el único objetivo de convocar las elecciones que devolverían el poder a Perón.",
+   nacimiento:1915,fallecimiento:1978,profesion:"Político",lugarnac:"Buenos Aires",
+   influencias:["Peronismo ortodoxo","López Rega"],
+   hitos:["Asumió como Pte. de Diputados tras doble renuncia de Cámpora-Solano Lima (1973)","Convocatoria a elecciones presidenciales para el 23 de septiembre (1973)","Perón gana con el 62%: el mayor porcentaje de la historia democrática (1973)","Gobierno de 49 días: el más corto de los presidentes electos (1973)","Vinculación con López Rega y el ala derecha del peronismo (1973)"],
+   indicadores:{inflacion:"Moderada",pbi:"Crecimiento",desempleo:"Bajo",pobreza:"Moderada",deuda:"Manejada",conflicto:"Lucha interna peronista",balance:"Superávit"}},
+
+  {id:50,nombre:"Ramón Puerta",periodo:"2001",inicio:2001,fin:2001,tipo:"interino",origen:"Interior",era:"democracia",partido:"PJ",partidoLabel:"PJ",
+   wiki:"Ramón_Puerta",
+   frase:{texto:"«Asumo con la única misión de restablecer el orden institucional.»",fuente:"Discurso de asunción, diciembre 2001"},
+   curiosidades:["Gobernó solo 2 días, del 21 al 23 de diciembre de 2001","Era senador por Misiones cuando le tocó asumir por acefalia","Fue el segundo de los cinco presidentes en diez días de Argentina"],
+   bio:"Presidente provisional del Senado que asumió por acefalia tras la renuncia de De la Rúa. Gobernó apenas dos días y convocó a la Asamblea Legislativa que designó a Adolfo Rodríguez Saá. Fue uno de los cinco presidentes que tuvo Argentina en esa semana de caos.",
+   nacimiento:1952,fallecimiento:null,profesion:"Político",lugarnac:"Posadas, Misiones",
+   influencias:["Peronismo provincial"],
+   hitos:["Asumió por acefalia tras renuncia de De la Rúa (21 dic. 2001)","Gobernó 2 días: 21 y 22 de diciembre de 2001","Convocó la Asamblea Legislativa para designar nuevo presidente (2001)","La Asamblea eligió a Rodríguez Saá (23 dic. 2001)","Argentina en estado de sitio durante toda su gestión (2001)"],
+   indicadores:{inflacion:"Crisis",pbi:"Caída -4.4%",desempleo:"18.3%",pobreza:"38%",deuda:"Default inminente",conflicto:"Crisis del 20 de diciembre",balance:"Déficit crítico"}},
+
+  {id:51,nombre:"Adolfo Rodríguez Saá",periodo:"2001",inicio:2001,fin:2001,tipo:"interino",origen:"Interior",era:"democracia",partido:"PJ",partidoLabel:"PJ",
+   wiki:"Adolfo_Rodríguez_Saá",
+   frase:{texto:"«¡Hemos decidido suspender el pago de la deuda externa!»",fuente:"Discurso en la Asamblea Legislativa, diciembre 2001"},
+   curiosidades:["Declaró el default de la deuda en su primer discurso, ante una ovación unánime","Gobernó solo 7 días antes de renunciar","Anunció la creación de una nueva moneda llamada 'el argentino' que nunca llegó a existir"],
+   bio:"Gobernador de San Luis elegido por la Asamblea Legislativa. En su primer discurso anunció el default de la deuda externa (el mayor del mundo hasta entonces) y la creación de una nueva moneda. Gobernó 7 días y renunció ante la falta de apoyo de los gobernadores peronistas.",
+   nacimiento:1947,fallecimiento:null,profesion:"Abogado, político",lugarnac:"San Luis",
+   influencias:["Peronismo federal","Economía heterodoxa"],
+   hitos:["Elegido por la Asamblea Legislativa (23 dic. 2001)","Declaración del default de la deuda: USD 100.000 M (2001)","Anuncio de nueva moneda 'el argentino' que nunca se implementó (2001)","Abandono de gobernadores peronistas: pierde apoyo político (2001)","Renuncia a los 7 días (30 dic. 2001)","Multitudes frente al Congreso pidiendo su continuidad (2001)"],
+   indicadores:{inflacion:"Crisis",pbi:"Caída libre",desempleo:"20%+",pobreza:"50%+",deuda:"Default declarado",conflicto:"Crisis total",balance:"Déficit crítico"}},
+
+  {id:52,nombre:"Eduardo Camaño",periodo:"2001–2002",inicio:2001,fin:2002,tipo:"interino",origen:"Buenos Aires",era:"democracia",partido:"PJ",partidoLabel:"PJ",
+   wiki:"Eduardo_Camaño",
+   frase:{texto:"«Mi única misión es que haya un presidente legítimo cuanto antes.»",fuente:"Declaración pública, enero 2002"},
+   curiosidades:["Gobernó 2 días: fue el quinto presidente en menos de dos semanas","Fue presidente de la Cámara de Diputados cuando le tocó asumir","Convocó la Asamblea que eligió a Duhalde, cerrando el período de caos"],
+   bio:"Presidente de la Cámara de Diputados que asumió por acefalia tras la renuncia de Rodríguez Saá. Gobernó dos días y convocó la Asamblea Legislativa que eligió a Eduardo Duhalde. Con él se cerró la semana más caótica de la historia institucional argentina: cinco presidentes en diez días.",
+   nacimiento:1946,fallecimiento:null,profesion:"Político",lugarnac:"Buenos Aires",
+   influencias:["Peronismo bonaerense"],
+   hitos:["Asumió como quinto presidente en 10 días (1 ene. 2002)","Gobernó exactamente 2 días (1 y 2 de enero de 2002)","Convocó la Asamblea Legislativa para elegir presidente (2002)","La Asamblea eligió a Eduardo Duhalde (2 ene. 2002)","Cerró el período de mayor inestabilidad institucional de la democracia (2002)"],
+   indicadores:{inflacion:"Crisis",pbi:"Caída",desempleo:"21%",pobreza:"57%",deuda:"Default",conflicto:"Crisis institucional total",balance:"Déficit"}}
+];
+
+// Wikipedia thumbnail cache (populated by API)
+const wikiThumbCache = {};
+
+// Map wiki keys to Wikipedia page titles for API lookup
+const WIKI_TITLES_ES = [
+  "Bernardino_Rivadavia","Juan_Manuel_de_Rosas","Justo_José_de_Urquiza","Bartolomé_Mitre",
+  "Domingo_Faustino_Sarmiento","Nicolás_Avellaneda","Julio_Argentino_Roca","Miguel_Juárez_Celman",
+  "Carlos_Pellegrini","Luis_Sáenz_Peña","José_Evaristo_Uriburu","Roque_Sáenz_Peña",
+  "Hipólito_Yrigoyen","Marcelo_Torcuato_de_Alvear","José_Félix_Uriburu","Agustín_Pedro_Justo",
+  "Roberto_Marcelino_Ortiz","Ramón_S._Castillo","Edelmiro_Julián_Farrell","Juan_Domingo_Perón",
+  "María_Estela_Martínez_de_Perón","Jorge_Rafael_Videla","Roberto_Eduardo_Viola",
+  "Leopoldo_Fortunato_Galtieri","Reynaldo_Bignone","Raúl_Alfonsín","Carlos_Menem",
+  "Fernando_de_la_Rúa","Eduardo_Duhalde","Néstor_Kirchner","Cristina_Fernández_de_Kirchner",
+  "Mauricio_Macri","Alberto_Fernández","Javier_Milei","Manuel_Quintana","José_Figueroa_Alcorta",
+  "Victorino_de_la_Plaza","Arturo_Rawson","Pedro_Pablo_Ramírez","Eduardo_Lonardi",
+  "Pedro_Eugenio_Aramburu","Arturo_Frondizi","José_María_Guido","Arturo_Illia",
+  "Juan_Carlos_Onganía",
+  "Héctor_Cámpora","Raúl_Lastiri","Ramón_Puerta","Adolfo_Rodríguez_Saá","Eduardo_Camaño"
+];
+
+// Map from Wikipedia returned titles back to our wiki keys (handles normalization)
+const TITLE_TO_KEY = {
+  "Hipólito Yrigoyen":"Hipólito_Yrigoyen",
+  "Julio Argentino Roca":"Julio_Argentino_Roca",
+  "Juan Domingo Perón":"Juan_Domingo_Perón",
+  "María Estela Martínez de Perón":"María_Estela_Martínez_de_Perón",
+  "Jorge Rafael Videla":"Jorge_Rafael_Videla",
+  "Raúl Alfonsín":"Raúl_Alfonsín",
+  "Carlos Menem":"Carlos_Menem",
+  "Néstor Kirchner":"Néstor_Kirchner",
+  "Cristina Fernández de Kirchner":"Cristina_Fernández_de_Kirchner",
+  "Mauricio Macri":"Mauricio_Macri",
+  "Alberto Fernández":"Alberto_Fernández",
+  "Javier Milei":"Javier_Milei",
+  "Arturo Illia":"Arturo_Illia",
+  "Arturo Rawson":"Arturo_Rawson",
+  "Eduardo Camaño":"Eduardo_Camaño",
+};
+
+async function loadWikiThumbs(wikiTitles) {
+  const titles = wikiTitles.filter(t => t && !wikiThumbCache[t]);
+  if (!titles.length) return;
+  const chunks = [];
+  for (let i = 0; i < titles.length; i += 20) chunks.push(titles.slice(i, i+20));
+  for (const chunk of chunks) {
+    try {
+      const url = `https://es.wikipedia.org/w/api.php?action=query&titles=${chunk.map(encodeURIComponent).join('|')}&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json&origin=*`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const missing = [];
+      const normMap = {};
+      (data.query.normalized || []).forEach(n => {
+        normMap[n.to.replace(/ /g,'_')] = n.from.replace(/ /g,'_');
+        normMap[n.to] = n.from.replace(/ /g,'_');
+      });
+      for (const page of Object.values(data.query.pages)) {
+        const pageKey = page.title.replace(/ /g,'_');
+        // Find the original key from chunk or normMap or TITLE_TO_KEY
+        const origKey = normMap[pageKey] || normMap[page.title] || TITLE_TO_KEY[page.title] || pageKey;
+        if (page.thumbnail?.source) {
+          wikiThumbCache[pageKey] = page.thumbnail.source;
+          wikiThumbCache[origKey] = page.thumbnail.source;
+        } else {
+          const orig = chunk.find(t => t.replace(/ /g,'_') === pageKey || t.replace(/ /g,'_') === origKey);
+          if (orig && !wikiThumbCache[orig]) missing.push(orig);
+        }
+      }
+      if (missing.length) {
+        try {
+          const urlEn = `https://en.wikipedia.org/w/api.php?action=query&titles=${missing.map(encodeURIComponent).join('|')}&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json&origin=*`;
+          const resEn = await fetch(urlEn);
+          const dataEn = await resEn.json();
+          const normMapEn = {};
+          (dataEn.query.normalized || []).forEach(n => { normMapEn[n.to.replace(/ /g,'_')] = n.from.replace(/ /g,'_'); });
+          for (const page of Object.values(dataEn.query.pages)) {
+            if (page.thumbnail?.source) {
+              const key = page.title.replace(/ /g,'_');
+              const origKey = normMapEn[key] || TITLE_TO_KEY[page.title] || key;
+              wikiThumbCache[key] = page.thumbnail.source;
+              wikiThumbCache[origKey] = page.thumbnail.source;
+            }
+          }
+        } catch(e) { /* silent */ }
+      }
+    } catch(e) { console.warn('Wiki thumb load failed', e); }
+  }
+}
+
+const HARDCODED_PHOTOS = {
+  "Arturo_Illia": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Arturo_Illia_1963_a_1966.jpg/330px-Arturo_Illia_1963_a_1966.jpg",
+  "Héctor_Cámpora": "https://upload.wikimedia.org/wikipedia/commons/d/d4/H%C3%A9ctor_Jos%C3%A9_C%C3%A1mpora.jpg",
+  "Raúl_Lastiri": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/LastiriPresidente_%28cropped%29.jpg/330px-LastiriPresidente_%28cropped%29.jpg",
+  "Roberto_Marcelo_Levingston": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Levingston_de_civil.jpg/330px-Levingston_de_civil.jpg",
+  "Alejandro_Agustín_Lanusse": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Alejandro_A_Lanusse.jpg/330px-Alejandro_A_Lanusse.jpg",
+};
+
+function getThumb(p) {
+  return HARDCODED_PHOTOS[p.wiki] || (p.wiki ? wikiThumbCache[p.wiki] : null);
+}
+
+async function initThumbs() {
+  renderGrid(); // show initials while loading
+  await loadWikiThumbs(WIKI_TITLES_ES);
+  renderGrid(); // re-render with photos
+}
+
+
+let selectedPresident = null;
+let compareList = [];
+let activeFilters = {era:'all', tipo:'all', partido:'all', origen:'all'};
+
+function getPartyColor(partido) {
+  return PARTY_COLORS[partido] || PARTY_COLORS.default;
+}
+
+function getEraLabel(era) {
+  const map = {siglo19:'S. XIX',turn:'1900-43',peronismo:'Peronismo',dictaduras:'Dictadura',democracia:'Democracia'};
+  return map[era] || era;
+}
+
+function formatTipo(tipo) {
+  if(tipo==='electo') return {label:'Electo',cls:'flag-electo'};
+  if(tipo==='facto') return {label:'De Facto',cls:'flag-facto'};
+  return {label:'Interino',cls:'flag-interino'};
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  filteredPresidents = presidents.filter(p => {
+    if(activeFilters.era !== 'all' && p.era !== activeFilters.era) return false;
+    if(activeFilters.tipo !== 'all' && p.tipo !== activeFilters.tipo) return false;
+    if(activeFilters.origen !== 'all') {
+      if(activeFilters.origen === 'Buenos Aires' && p.origen !== 'Buenos Aires') return false;
+      if(activeFilters.origen === 'Interior' && p.origen !== 'Interior') return false;
+      if(activeFilters.origen === 'Extranjero' && p.origen !== 'Extranjero') return false;
+    }
+    if(activeFilters.partido !== 'all' && p.partido !== activeFilters.partido) return false;
+    if(search && !p.nombre.toLowerCase().includes(search) && !p.periodo.includes(search)) return false;
+    return true;
+  });
+  renderGrid();
+}
+
+function switchTab(e, tabId) {
+  document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.detail-tab-panel').forEach(p=>p.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  const panel = document.getElementById(tabId);
+  if(panel) panel.classList.add('active');
+  if(tabId === 'tab-mandato') {
+    setTimeout(renderDetailChart, 50);
+  }
+}
+
+function renderGrid() {
+  const sort = document.getElementById('sortSelect').value;
+  let sorted = [...filteredPresidents];
+  if(sort === 'nombre') sorted.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  else if(sort === 'duracion') sorted.sort((a,b)=>(b.fin-b.inicio)-(a.fin-a.inicio));
+  else sorted.sort((a,b)=>a.inicio-b.inicio);
+
+  document.getElementById('resultsCount').textContent = sorted.length + ' presidentes';
+  document.getElementById('filterStats').innerHTML = `Mostrando <strong>${sorted.length}</strong> presidentes`;
+
+  const grid = document.getElementById('presidentsGrid');
+  grid.innerHTML = sorted.map(p => {
+    const tipo = formatTipo(p.tipo);
+    const pc = getPartyColor(p.partido);
+    const inCompare = compareList.includes(p.id);
+    const isSelected = selectedPresident?.id === p.id;
+    const thumb = getThumb(p);
+    return `<div class="pcard${inCompare?' in-compare':''}${isSelected?' selected':''}" onclick="openDetail(${p.id})" id="pcard-${p.id}">
+      <span class="pcard-flag ${p.live?'flag-live':tipo.cls}">${p.live?'🔴 LIVE':tipo.label}</span>
+      <button class="pcard-compare-btn" onclick="event.stopPropagation();toggleCompare(${p.id})" title="Comparar">${inCompare?'✓':'+'}
+      </button>
+      ${thumb ? `
+        <div class="pcard-img-wrap">
+          <img src="${thumb}" alt="${p.nombre}" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.pcard-img-wrap').innerHTML='<div style=\'width:100%;height:100%;background:linear-gradient(135deg,var(--paper) 0%,var(--border) 100%);display:flex;align-items:center;justify-content:center;font-family:Playfair Display,serif;font-size:2rem;font-weight:700;color:var(--ink3);\'>${getInitials(p.nombre)}</div>'">
+          <div class="pcard-img-overlay"></div>
+        </div>
+      ` : `<div style="width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--paper) 0%,var(--border) 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--ink3);">${getInitials(p.nombre)}</div>`}
+      <div class="pcard-body">
+        <div class="pcard-name">${p.nombre}</div>
+        <div class="pcard-period">${p.periodo}</div>
+        <span class="pcard-party" style="background:${pc.bg};color:${pc.color}">${p.partidoLabel}</span>
+        <div class="pcard-indicators">
+          <span class="mini-ind">📈 ${p.indicadores.inflacion?.split(' ')[0] || 'N/D'}</span>
+          <span class="mini-ind">👥 ${p.indicadores.desempleo?.split(' ')[0] || 'N/D'}</span>
+        </div>
+        <div class="pcard-duration-bar" title="${p.fin-p.inicio} año(s) en el poder">
+          <div class="pcard-duration-fill" style="width:${Math.min(100,((p.fin-p.inicio)/25)*100)}%"></div>
+        </div>
+        <div style="font-size:0.6rem;color:var(--ink3);margin-top:2px;">${p.fin-p.inicio} año${(p.fin-p.inicio)!==1?'s':''} en el poder</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getInitials(nombre) {
+  return nombre.split(' ').filter(w=>w.length>2).slice(0,2).map(w=>w[0]).join('');
+}
+
+function getIndDot(key, val) {
+  if(!val || val==='N/D') return 'ind-dot-neutral';
+  const v = val.toLowerCase();
+  if(key==='inflacion') {
+    if(v.includes('baja')||v.includes('deflacion')||v.includes('3%')) return 'ind-dot-good';
+    if(v.includes('alta')||v.includes('700')||v.includes('3.000')||v.includes('211')||v.includes('230')||v.includes('175')||v.includes('165')||v.includes('104')||v.includes('crisis')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='pbi') {
+    if(v.includes('crecimiento')||v.includes('superavit')) return 'ind-dot-good';
+    if(v.includes('caída')||v.includes('estancado')||v.includes('caida')||v.includes('severa')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='desempleo') {
+    if(v.includes('bajo')||v.includes('muy bajo')) return 'ind-dot-good';
+    if(v.includes('alto')||v.includes('21%')||v.includes('18%')||v.includes('20%')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='pobreza') {
+    if(v.includes('baja')||v.includes('cayó')||v.includes('32%')) return 'ind-dot-good';
+    if(v.includes('alta')||v.includes('crítica')||v.includes('critica')||v.includes('50%')||v.includes('57%')||v.includes('53%')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='balance') {
+    if(v.includes('superávit')||v.includes('superavit')) return 'ind-dot-good';
+    if(v.includes('déficit')||v.includes('deficit')||v.includes('crítico')||v.includes('critico')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='deuda') {
+    if(v.includes('pagó')||v.includes('estable')||v.includes('manejada')) return 'ind-dot-good';
+    if(v.includes('default')||v.includes('crisis')||v.includes('insostenible')||v.includes('duplicó')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  if(key==='conflicto') {
+    if(v.includes('bajo')) return 'ind-dot-good';
+    if(v.includes('guerra')||v.includes('terrorismo')||v.includes('guerrilla')||v.includes('masiva')||v.includes('triple a')) return 'ind-dot-bad';
+    return 'ind-dot-warn';
+  }
+  return 'ind-dot-neutral';
+}
+
+const IND_META = {
+  inflacion:{icon:'📈',label:'Inflación'},
+  pbi:{icon:'💰',label:'PBI'},
+  desempleo:{icon:'👥',label:'Desempleo'},
+  pobreza:{icon:'🏠',label:'Pobreza'},
+  deuda:{icon:'🌐',label:'Deuda ext.'},
+  conflicto:{icon:'⚡',label:'Conflicto'},
+  balance:{icon:'⚖️',label:'Balance fiscal'}
+};
+
+function buildIndCard(key, val) {
+  const meta = IND_META[key] || {icon:'📊',label:key};
+  const dot = getIndDot(key, val);
+  return `<div class="ind-card">
+    <div class="ind-card-dot ${dot}"></div>
+    <div class="ind-label"><span class="ind-label-icon">${meta.icon}</span>${meta.label}</div>
+    <div class="ind-value" style="font-size:0.88rem">${val||'N/D'}</div>
+  </div>`;
+}
+
+function openDetail(id) {
+  const p = presidents.find(x=>x.id===id);
+  if(!p) return;
+  selectedPresident = p;
+  document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('selected'));
+  const card = document.getElementById(`pcard-${id}`);
+  if(card) card.classList.add('selected');
+
+  const pc = getPartyColor(p.partido);
+  const currentYear = 2026;
+  const edad = p.fallecimiento ? p.fallecimiento - p.nacimiento : (currentYear - p.nacimiento);
+  const edadMandato = p.inicio - p.nacimiento;
+  const duracion = p.fin - p.inicio;
+
+  let liveSection = '';
+  if(p.live && p.liveData) {
+    liveSection = `<div class="detail-section">
+      <div class="detail-section-title">📡 Indicadores en tiempo real (2025-2026)</div>
+      <div class="indicators-grid">
+        <div class="ind-card"><div class="ind-card-dot ind-dot-good"></div><div class="ind-label"><span class="ind-label-icon">📈</span>Inflación mensual</div><div class="ind-value">${p.liveData.inflacionMensual}</div><span class="ind-badge badge-good">En descenso</span></div>
+        <div class="ind-card"><div class="ind-card-dot ind-dot-neutral"></div><div class="ind-label"><span class="ind-label-icon">🏦</span>Reservas BCRA</div><div class="ind-value">${p.liveData.reservas}</div><span class="ind-badge badge-neutral">Recuperando</span></div>
+        <div class="ind-card"><div class="ind-card-dot ind-dot-good"></div><div class="ind-label"><span class="ind-label-icon">📉</span>Riesgo País</div><div class="ind-value">${p.liveData.riesgoPais}</div><span class="ind-badge badge-good">Bajando</span></div>
+        <div class="ind-card"><div class="ind-card-dot ind-dot-good"></div><div class="ind-label"><span class="ind-label-icon">⚖️</span>Balance fiscal</div><div class="ind-value">${p.liveData.superavit}</div><span class="ind-badge badge-good">Histórico</span></div>
+      </div>
+      <p style="font-size:0.7rem;color:var(--ink3);margin-top:0.5rem;">Fuentes: ${p.liveData.fuente}</p>
+    </div>`;
+  }
+
+  const hitosHTML = p.hitos.map((h,i) => `<div class="timeline-item"><span class="timeline-year">#${i+1}</span><span class="timeline-text">${h}</span></div>`).join('');
+
+  // Inflation chart: only show for post-1983 democracy presidents
+  const showInflChart = p.era === 'democracia' && p.inicio >= 1983;
+  const inflChartSection = showInflChart ? `
+    <div class="detail-section">
+      <div class="detail-section-title">📊 Inflación en democracia (1983–hoy)</div>
+      <div class="chart-container">
+        <div class="chart-title">Inflación anual estimada — presidentes democráticos desde 1983</div>
+        <div style="position:relative;height:200px;"><canvas id="chartInflacion"></canvas></div>
+      </div>
+    </div>` : '';
+
+  // Prev / next navigation
+  const sorted = [...presidents].sort((a,b)=>a.inicio-b.inicio);
+  const idx = sorted.findIndex(x=>x.id===id);
+  const prev = idx > 0 ? sorted[idx-1] : null;
+  const next = idx < sorted.length-1 ? sorted[idx+1] : null;
+
+  function navThumb(pr) {
+    if(!pr) return '';
+    const t = getThumb(pr);
+    if(t) return `<img class="nav-btn-photo" src="${t}" alt="${pr.nombre}">`;
+    return `<span style="width:28px;height:28px;border-radius:3px;background:var(--paper);display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--ink3);">${getInitials(pr.nombre)}</span>`;
+  }
+
+  const thumb = getThumb(p);
+  const photoHTML = thumb
+    ? `<img class="detail-photo" src="${thumb}" alt="${p.nombre}" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\'detail-photo-ph\'><span style=\'font-family:Playfair Display,serif;font-size:3.5rem;font-weight:700;color:var(--ink3);\'>${getInitials(p.nombre)}</span></div>'">`
+    : `<div class="detail-photo-ph"><span style="font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:700;color:var(--ink3);">${getInitials(p.nombre)}</span></div>`;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-hero">
+      ${photoHTML}
+      <div class="detail-header">
+        ${p.live ? '<div class="detail-live-badge"><span class="detail-live-dot"></span> PRESIDENTE ACTUAL</div>' : ''}
+        <div class="detail-name">${p.nombre}</div>
+        <div class="detail-period">${p.periodo}</div>
+        <div class="detail-meta-chips">
+          <span class="dmchip">${p.partidoLabel}</span>
+          <span class="dmchip">${getEraLabel(p.era)}</span>
+          <span class="dmchip">${p.tipo==='facto'?'De Facto':p.tipo==='electo'?'Electo':'Interino'}</span>
+          <span class="dmchip">📍 ${p.lugarnac}</span>
+          ${p.fallecimiento ? `<span class="dmchip">†${p.fallecimiento}</span>` : '<span class="dmchip" style="background:rgba(46,125,50,0.25);border-color:rgba(46,125,50,0.4)">✓ Vivo</span>'}
+        </div>
+        ${p.frase ? `<div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.12);">
+          <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold2);margin-bottom:0.5rem;">✍️ Frase célebre</div>
+          <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:0.95rem;color:rgba(250,247,242,0.92);line-height:1.55;">${p.frase.texto}</div>
+          <div style="font-size:0.68rem;color:rgba(250,247,242,0.45);margin-top:0.35rem;">${p.frase.fuente}</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="detail-tabs">
+      <div class="detail-tab active" onclick="switchTab(event,'tab-bio')">📖 Biografía</div>
+      <div class="detail-tab" onclick="switchTab(event,'tab-datos')">👤 Datos</div>
+      <div class="detail-tab" onclick="switchTab(event,'tab-mandato')">📅 Mandato</div>
+      <div class="detail-tab" onclick="switchTab(event,'tab-economia')">📊 Economía</div>
+    </div>
+
+    <div class="detail-body">
+
+      <!-- TAB: BIOGRAFÍA -->
+      <div id="tab-bio" class="detail-tab-panel active">
+        <div class="detail-section">
+          <div class="bio-lead">${p.bio.split('.')[0]}.</div>
+          <p class="bio-text">${p.bio.split('.').slice(1).join('.').trim()}</p>
+        </div>
+        ${p.curiosidades && p.curiosidades.length ? `
+        <div class="detail-section">
+          <div class="detail-section-title">💡 Curiosidades</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${p.curiosidades.map(c=>`<div class="curio-card"><span class="curio-card-icon">💡</span><span class="curio-card-text">${c}</span></div>`).join('')}
+          </div>
+        </div>` : ''}
+        <div class="detail-section">
+          <div class="detail-section-title">🧠 Influencias ideológicas</div>
+          <div class="influences-list">${p.influencias.map(i=>`<span class="influence-tag">${i}</span>`).join('')}</div>
+        </div>
+      </div>
+
+      <!-- TAB: DATOS PERSONALES -->
+      <div id="tab-datos" class="detail-tab-panel">
+        <div class="detail-section">
+          <div class="detail-section-title">Datos personales</div>
+          <div class="info-grid">
+            <div class="info-card"><span class="info-card-icon">🎂</span><div class="info-label">Nacimiento</div><div class="info-value">${p.nacimiento}</div></div>
+            <div class="info-card"><span class="info-card-icon">👤</span><div class="info-label">Edad al asumir</div><div class="info-value">${edadMandato} años</div></div>
+            <div class="info-card"><span class="info-card-icon">${p.fallecimiento?'†':'🎂'}</span><div class="info-label">${p.fallecimiento?'Edad al fallecer':'Edad actual'}</div><div class="info-value">${edad} años</div></div>
+            <div class="info-card"><span class="info-card-icon">📅</span><div class="info-label">Duración mandato</div><div class="info-value">${duracion === 0 ? '< 1 año' : duracion + ' año' + (duracion!==1?'s':'')}</div></div>
+            <div class="info-card"><span class="info-card-icon">💼</span><div class="info-label">Profesión</div><div class="info-value" style="font-size:0.78rem;line-height:1.3">${p.profesion}</div></div>
+            <div class="info-card"><span class="info-card-icon">📍</span><div class="info-label">Lugar de origen</div><div class="info-value" style="font-size:0.78rem;line-height:1.3">${p.lugarnac}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MANDATO -->
+      <div id="tab-mandato" class="detail-tab-panel">
+        <div class="detail-section">
+          <div class="detail-section-title">📆 Efemérides del mandato</div>
+          <div class="hitos-timeline">
+            ${p.hitos.map((h,i)=>{
+              // Extract year from parentheses like "(1821)" or "(1838–1840)", or infer from periodo
+              const yearMatch = h.match(/\((\d{4}[–\-]?\d{0,4})\)/);
+              const year = yearMatch ? yearMatch[1] : (p.inicio === p.fin ? p.inicio : `${p.inicio}–${p.fin}`);
+              const text = h.replace(/\s*\(\d{4}[–\-]?\d{0,4}\)/, '').trim();
+              return `<div class="hito-item">
+                <div class="hito-left"><div class="hito-dot"></div><div class="hito-line"></div></div>
+                <div class="hito-content">
+                  <div class="hito-year">${year}</div>
+                  <div class="hito-text">${text}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        ${liveSection}
+        ${inflChartSection}
+      </div>
+
+      <!-- TAB: ECONOMÍA -->
+      <div id="tab-economia" class="detail-tab-panel">
+        <div class="detail-section">
+          <div class="detail-section-title">Indicadores económicos y sociales</div>
+          <div class="indicators-grid">
+            ${Object.entries(IND_META).map(([key])=>buildIndCard(key,p.indicadores[key])).join('')}
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="detail-nav">
+      <button class="nav-btn" onclick="openDetail(${prev?prev.id:id})" ${!prev?'disabled':''}>
+        ${prev?navThumb(prev):''}
+        <span>← ${prev ? prev.nombre.split(' ').slice(-1)[0] : '—'}</span>
+      </button>
+      <div class="nav-center">${idx+1} / ${sorted.length}</div>
+      <button class="nav-btn" onclick="openDetail(${next?next.id:id})" ${!next?'disabled':''}>
+        <span>${next ? next.nombre.split(' ').slice(-1)[0] : '—'} →</span>
+        ${next?navThumb(next):''}
+      </button>
+    </div>`;
+
+  document.getElementById('detailOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // Don't auto-render chart on open; it renders when Mandato tab is activated
+}
+
+function renderDetailChart() {
+  const ctx = document.getElementById('chartInflacion');
+  if(!ctx) return;
+  const demPres = presidents.filter(p=>p.era==='democracia' && p.inicio>=1983).sort((a,b)=>a.inicio-b.inicio);
+  const labels = demPres.map(p=>p.nombre.split(' ').slice(-1)[0]);
+  const data = demPres.map(p=>{
+    const inf = p.indicadores.inflacion;
+    if(inf.includes('3.000')) return 3000;
+    if(inf.includes('700')) return 700;
+    if(inf.includes('211')) return 211;
+    if(inf.includes('53')) return 53;
+    if(inf.includes('41')) return 41;
+    if(inf.includes('10')) return 10;
+    if(inf.includes('30')) return 30;
+    if(inf.includes('66')) return 66;
+    return 15;
+  });
+  const colors = demPres.map(p=>{
+    const isSelected = selectedPresident && p.id === selectedPresident.id;
+    const v = data[demPres.indexOf(p)];
+    if(isSelected) return '#1A3A5C';
+    return v>200?'#8B1A1A':v>50?'#C8922A':'#1A4A2A';
+  });
+  new Chart(ctx, {
+    type:'bar',
+    data:{labels,datasets:[{label:'Inflación anual %',data,backgroundColor:colors,borderRadius:4,
+      borderColor:demPres.map(p=>selectedPresident&&p.id===selectedPresident.id?'#E8B84B':'transparent'),
+      borderWidth:demPres.map(p=>selectedPresident&&p.id===selectedPresident.id?2:0)
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y.toLocaleString()}%`}}},
+      scales:{y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10}}},x:{ticks:{font:{size:9},maxRotation:45}}}}
+  });
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.body.style.overflow='';
+  selectedPresident = null;
+  document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('selected'));
+}
+
+function handleOverlayClick(e) {
+  if(e.target === document.getElementById('detailOverlay')) closeDetail();
+}
+
+function toggleCompare(id) {
+  if(compareList.includes(id)) {
+    compareList = compareList.filter(x=>x!==id);
+  } else {
+    compareList.push(id);
+  }
+  document.getElementById('compareBadge').textContent = compareList.length;
+  renderGrid();
+}
+
+function clearCompare() {
+  compareList = [];
+  document.getElementById('compareBadge').textContent = 0;
+  renderGrid();
+}
+
+function openCompare() {
+  if(compareList.length < 2) { alert('Seleccioná al menos 2 presidentes con el botón + en cada card.'); return; }
+  const modal = document.getElementById('compareOverlay');
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+  renderCompare();
+}
+
+function closeCompare() {
+  document.getElementById('compareOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function handleCompareClick(e) {
+  if(e.target === document.getElementById('compareOverlay')) closeCompare();
+}
+
+function renderCompare() {
+  const ps = compareList.map(id => presidents.find(p=>p.id===id));
+  const cols = ps.length;
+  
+  const headers = ps.map(p => `
+    <div class="compare-col-header">
+      ${getThumb(p) ? `<img class="compare-col-photo" src="${getThumb(p)}" referrerpolicy="no-referrer" onerror="this.style.display='none'">` : ''}
+      <div><div class="compare-col-name">${p.nombre}</div><div class="compare-col-period">${p.periodo}</div></div>
+    </div>`).join('');
+
+  const metrics = ['inflacion','pbi','desempleo','pobreza','deuda','balance','conflicto'];
+  const metricLabels = {inflacion:'Inflación',pbi:'PBI',desempleo:'Desempleo',pobreza:'Pobreza',deuda:'Deuda',balance:'Balance fiscal',conflicto:'Conflicto social'};
+
+  const rows = metrics.map(m => `
+    <div>
+      <div class="compare-metric-label">${metricLabels[m]}</div>
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:8px;">
+        ${ps.map(p=>`<div class="compare-value">${p.indicadores[m]||'N/D'}</div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const colDefs = ps.map(p=>`repeat(${cols},1fr)`)[0];
+
+  document.getElementById('compareContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1rem;margin-bottom:1.5rem;">
+      ${ps.map(p=>`<div class="compare-col"><div class="compare-col-header">
+        ${getThumb(p)?`<img class="compare-col-photo" src="${getThumb(p)}" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:''}
+        <div><div class="compare-col-name">${p.nombre}</div><div class="compare-col-period">${p.periodo}</div>
+        <div style="font-size:0.7rem;color:var(--ink3)">${p.tipo==='facto'?'De Facto':p.tipo==='electo'?'Electo':'Interino'} · ${p.lugarnac}</div></div>
+      </div></div>`).join('')}
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;">
+      <div style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:1rem;">Indicadores comparados</div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">${rows}</div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.25rem;">
+      <div style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:0.75rem;">Años de mandato</div>
+      <div style="position:relative;height:${Math.max(160,cols*40+80)}px;"><canvas id="compareChart"></canvas></div>
+    </div>`;
+
+  setTimeout(() => {
+    const ctx = document.getElementById('compareChart');
+    if(!ctx) return;
+    new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels: ps.map(p=>p.nombre.split(' ').slice(-1)[0]),
+        datasets:[{
+          label:'Años en el poder',
+          data: ps.map(p=>p.fin-p.inicio),
+          backgroundColor: ps.map(p=>p.tipo==='facto'?'#8B1A1A':p.tipo==='electo'?'#1A3A5C':'#C8922A'),
+          borderRadius:4
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}
+    });
+  }, 100);
+}
+
+// Filter bindings
+document.querySelectorAll('#eraFilters .chip').forEach(c => c.addEventListener('click', function() {
+  document.querySelectorAll('#eraFilters .chip').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  activeFilters.era = this.dataset.era;
+  applyFilters();
+}));
+document.querySelectorAll('#tipoFilters .chip').forEach(c => c.addEventListener('click', function() {
+  document.querySelectorAll('#tipoFilters .chip').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  activeFilters.tipo = this.dataset.tipo;
+  applyFilters();
+}));
+document.querySelectorAll('#partidoFilters .chip').forEach(c => c.addEventListener('click', function() {
+  document.querySelectorAll('#partidoFilters .chip').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  activeFilters.partido = this.dataset.partido;
+  applyFilters();
+}));
+document.querySelectorAll('#origenFilters .chip').forEach(c => c.addEventListener('click', function() {
+  document.querySelectorAll('#origenFilters .chip').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  activeFilters.origen = this.dataset.origen;
+  applyFilters();
+}));
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.addEventListener('keydown', e => { if(e.key==='Escape'){closeDetail();closeCompare();closeMobileSidebar();} });
+
+function closeMobileSidebar(){
+  const sidebar=document.getElementById('sidebarPanel');
+  const backdrop=document.getElementById('sidebarBackdrop');
+  if(sidebar.classList.contains('open')){
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow='';
+  }
+}
+
+/* Auto-close sidebar on mobile after filter click */
+document.querySelectorAll('.sidebar .chip').forEach(c => c.addEventListener('click', function(){
+  if(window.innerWidth<=600) setTimeout(closeMobileSidebar,200);
+}));
+
+// Init
+applyFilters();
+initThumbs(); // loads wiki thumbnails then re-renders
+
+function renderRanking() {
+  const sorted = [...presidents].sort((a,b)=>(b.fin-b.inicio)-(a.fin-a.inicio)).slice(0,5);
+  document.getElementById('rankList').innerHTML = sorted.map((p,i) => 
+    `<div class="rank-item">
+      <span class="rank-num">${['🥇','🥈','🥉','4°','5°'][i]}</span>
+      <span class="rank-name">${p.nombre.split(' ').slice(-1)[0]}</span>
+      <span class="rank-val">${p.fin-p.inicio} años</span>
+    </div>`
+  ).join('');
+}
+
+function updateStats() {
+  const electos = presidents.filter(p=>p.tipo==='electo').length;
+  const facto = presidents.filter(p=>p.tipo==='facto').length;
+  const interinos = presidents.filter(p=>p.tipo==='interino').length;
+  document.getElementById('statTotal').textContent = presidents.length;
+  document.getElementById('statElectos').textContent = electos;
+  document.getElementById('statFacTo').textContent = facto;
+  document.getElementById('statInterinos').textContent = interinos;
+}
+
+
+renderRanking();
+updateStats();
+</script>
+</body>
+</html>
